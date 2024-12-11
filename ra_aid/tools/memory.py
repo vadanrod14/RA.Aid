@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Union, TypedDict, Optional
+from typing import Dict, List, Any, Union, TypedDict, Optional, Sequence
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -118,6 +118,33 @@ def emit_key_fact(fact: str) -> str:
     # Return fact with ID
     return f"Stored fact #{fact_id}: {fact}"
 
+@tool("emit_key_facts")
+def emit_key_facts(facts: List[str]) -> List[str]:
+    """Store multiple key facts about the project or current task in global memory.
+    
+    Args:
+        facts: List of key facts to store
+        
+    Returns:
+        List of stored fact confirmation messages
+    """
+    results = []
+    for fact in facts:
+        # Get and increment fact ID
+        fact_id = _global_memory['key_fact_id_counter']
+        _global_memory['key_fact_id_counter'] += 1
+        
+        # Store fact with ID
+        _global_memory['key_facts'][fact_id] = fact
+        
+        # Display panel with ID
+        console.print(Panel(Markdown(fact), title=f"💡 Key Fact #{fact_id}", border_style="bright_cyan"))
+        
+        # Add result message
+        results.append(f"Stored fact #{fact_id}: {fact}")
+        
+    return results
+
 @tool("delete_key_fact")
 def delete_key_fact(fact_id: int) -> str:
     """Delete a key fact from global memory by its ID.
@@ -138,6 +165,28 @@ def delete_key_fact(fact_id: int) -> str:
     success_msg = f"Successfully deleted fact #{fact_id}: {deleted_fact}"
     console.print(Panel(Markdown(success_msg), title="🗑️ Fact Deleted", border_style="green"))
     return success_msg
+
+@tool("delete_key_facts")
+def delete_key_facts(fact_ids: List[int]) -> List[str]:
+    """Delete multiple key facts from global memory by their IDs.
+    Silently skips any IDs that don't exist.
+    
+    Args:
+        fact_ids: List of fact IDs to delete
+        
+    Returns:
+        List of success messages for deleted facts
+    """
+    results = []
+    for fact_id in fact_ids:
+        if fact_id in _global_memory['key_facts']:
+            # Delete the fact
+            deleted_fact = _global_memory['key_facts'].pop(fact_id)
+            success_msg = f"Successfully deleted fact #{fact_id}: {deleted_fact}"
+            console.print(Panel(Markdown(success_msg), title="🗑️ Fact Deleted", border_style="green"))
+            results.append(success_msg)
+            
+    return results
 
 @tool("request_implementation")
 def request_implementation(reason: str) -> str:
