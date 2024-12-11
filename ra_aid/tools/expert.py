@@ -43,6 +43,8 @@ def ask_expert(question: str) -> str:
 
     The expert can be extremely useful at logic questions, debugging, and reviewing complex source code, but you must provide all context including source manually.
 
+    The query will automatically include any key facts and code snippets from memory, along with any additional context you've provided.
+
     Try to phrase your question in a way that it does not expand the scope of our top-level task.
 
     The expert can be prone to overthinking depending on what and how you ask it.
@@ -63,6 +65,12 @@ def ask_expert(question: str) -> str:
     if key_facts and len(key_facts) > 0:
         query_parts.append("# Key Facts About This Project")
         query_parts.append(key_facts)
+    
+    # Add key snippets if they exist
+    key_snippets = get_memory_value('key_snippets')
+    if key_snippets and len(key_snippets) > 0:
+        query_parts.append('# Key Snippets')
+        query_parts.append(key_snippets)
     
     # Add other context if it exists
     if expert_context:
