@@ -86,7 +86,14 @@ pip install ra-aid
 
 ### Prerequisites
 
-Before using RA.Aid, you'll need to set up your API keys for the required AI services:
+Before using RA.Aid, you'll need:
+
+1. Python package `aider` installed and available in your PATH:
+```bash
+pip install aider-chat
+```
+
+2. API keys for the required AI services:
 
 ```bash
 # Required: Set up your Anthropic API key
