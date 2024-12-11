@@ -1,4 +1,4 @@
-from .version import __version__
+from .__version__ import __version__
 from .console.formatting import print_stage_header, print_task_header
 from .console.output import print_agent_output
 from .text.processing import truncate_output

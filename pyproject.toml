@@ -23,12 +23,14 @@ classifiers = [
 ]
 dependencies = [
     "langchain-anthropic",
+    "langchain-openai",
     "langgraph",
     "rich>=13.0.0",
     "GitPython==3.1.43",
     "fuzzywuzzy==0.18.0", 
     "python-Levenshtein==0.23.0",
     "pathspec>=0.11.0",
+    "aider-chat",
 ]
 
 [project.optional-dependencies]
