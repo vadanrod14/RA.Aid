@@ -5,6 +5,7 @@ from .read_file import read_file_tool
 from .fuzzy_find import fuzzy_find_project_files
 from .list_directory import list_directory_tree
 from .ripgrep import ripgrep_search
+from .note_tech_debt import note_tech_debt
 from .memory import (
     emit_research_notes, emit_plan, emit_task, get_memory_value, emit_key_facts,
     request_implementation, skip_implementation, delete_key_facts, emit_research_subtask,
@@ -32,5 +33,6 @@ __all__ = [
     'skip_implementation',
     'emit_research_subtask',
     'fuzzy_find_project_files',
-    'ripgrep_search'
+    'ripgrep_search',
+    'note_tech_debt'
 ]

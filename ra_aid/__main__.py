@@ -1,5 +1,6 @@
 import sqlite3
 import argparse
+import glob
 import os
 import sys
 import shutil
@@ -11,7 +12,7 @@ from ra_aid.tools import (
     ask_expert, run_shell_command, run_programming_task,
     emit_research_notes, emit_plan, emit_related_files, emit_task,
     emit_expert_context, get_memory_value, emit_key_facts, delete_key_facts,
-    emit_key_snippets, delete_key_snippets,
+    emit_key_snippets, delete_key_snippets, note_tech_debt,
     request_implementation, read_file_tool, emit_research_subtask,
     fuzzy_find_project_files, ripgrep_search, list_directory_tree
 )
@@ -63,9 +64,9 @@ planning_memory = MemorySaver()
 implementation_memory = MemorySaver()
 
 # Define tool sets for each stage
-research_tools = [list_directory_tree, emit_research_subtask, run_shell_command, emit_expert_context, ask_expert, emit_research_notes, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, request_implementation, read_file_tool, fuzzy_find_project_files, ripgrep_search]
-planning_tools = [list_directory_tree, emit_expert_context, ask_expert, emit_plan, emit_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
-implementation_tools = [list_directory_tree, run_shell_command, emit_expert_context, ask_expert, run_programming_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+research_tools = [list_directory_tree, emit_research_subtask, run_shell_command, emit_expert_context, ask_expert, emit_research_notes, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, note_tech_debt, request_implementation, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+planning_tools = [list_directory_tree, emit_expert_context, ask_expert, emit_plan, emit_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, note_tech_debt, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+implementation_tools = [list_directory_tree, run_shell_command, emit_expert_context, ask_expert, run_programming_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, note_tech_debt, read_file_tool, fuzzy_find_project_files, ripgrep_search]
 
 # Create stage-specific agents with individual memory objects
 research_agent = create_react_agent(model, research_tools, checkpointer=research_memory)
@@ -236,6 +237,47 @@ def validate_environment():
             print(f"- {error}", file=sys.stderr)
         sys.exit(1)
 
+def review_tech_debt(model) -> None:
+    """Review any technical debt notes collected during execution."""
+    tech_debt_dir = '.ra-aid/tech-debt'
+    tech_debt_files = glob.glob(os.path.join(tech_debt_dir, '*.md'))
+
+    if not tech_debt_files:
+        return
+
+    print_stage_header("Technical Debt Review")
+    
+    # Read the contents of all tech debt notes
+    tech_debt_contents = []
+    for file_path in tech_debt_files:
+        with open(file_path, 'r') as file:
+            content = file.read()
+            tech_debt_contents.append(content)
+
+    # Analyze the tech debt notes
+    prompt = f"""Review the following technical debt notes collected during program execution:
+
+{chr(10).join(tech_debt_contents)}
+
+Please provide a brief, focused analysis:
+1. Group similar issues if any
+2. Highlight high-impact items
+3. Suggest a rough priority order
+Keep the response concise and actionable.
+"""
+    # Stream the analysis
+    while True:
+        try:
+            for chunk in model.stream(
+                {"messages": [HumanMessage(content=prompt)]},
+                {"configurable": {"thread_id": "tech-debt"}, "recursion_limit": 100}
+            ):
+                print_agent_output(chunk) 
+            break
+        except ChatAnthropic.InternalServerError as e:
+            print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
+            continue
+
 def main():
     """Main entry point for the ra-aid command line tool."""
     try:
@@ -316,6 +358,7 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
                 related_files
             )
     except TaskCompletedException:
+        review_tech_debt(model)
         sys.exit(0)
 
 if __name__ == "__main__":
