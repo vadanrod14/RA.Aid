@@ -16,6 +16,8 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Status](https://img.shields.io/badge/status-Beta-yellow)]()
 
+[![asciicast](https://asciinema.org/a/FaO9rQ89jpXwHXx64Cj3ZNCYu.svg)](https://asciinema.org/a/FaO9rQ89jpXwHXx64Cj3ZNCYu)
+
 # RA.Aid
 
 RA.Aid (ReAct Aid) is a powerful AI-driven command-line tool that integrates `aider` (https://aider.chat/) within a LangChain ReAct agent loop. This unique combination allows developers to leverage aider's code editing capabilities while benefiting from LangChain's agent-based task execution framework. The tool provides an intelligent assistant that can help with research, planning, and implementation of development tasks.
