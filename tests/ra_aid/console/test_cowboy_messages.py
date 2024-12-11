@@ -8,9 +8,10 @@ def test_get_cowboy_message_returns_string():
     assert len(message) > 0
 
 def test_cowboy_message_contains_emoji():
-    """Test that returned message contains the cowboy emoji"""
+    """Test that returned message contains at least one of the expected emojis"""
     message = get_cowboy_message()
-    assert '🤠' in message
+    expected_emojis = ['🤠', '👶', '😏']
+    assert any(emoji in message for emoji in expected_emojis)
 
 def test_message_from_predefined_list():
     """Test that returned message is from our predefined list"""

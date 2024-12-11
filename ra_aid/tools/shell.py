@@ -40,14 +40,14 @@ def run_shell_command(command: str) -> Dict[str, Union[str, int, bool]]:
             - return_code: The process return code (0 typically means success)
             - success: Boolean indicating if the command succeeded (return code == 0)
     """
-    # Show just the command in a simple panel
-    console.print(Panel(command, title="🐚 Shell", border_style="bright_yellow"))
-
     # Check if we need approval
     cowboy_mode = _global_memory.get('config', {}).get('cowboy_mode', False)
     
     if cowboy_mode:
         console.print(get_cowboy_message())
+
+    # Show just the command in a simple panel
+    console.print(Panel(command, title="🐚 Shell", border_style="bright_yellow"))
     
     if not cowboy_mode:
         if not Confirm.ask("Execute this command?", default=True):
