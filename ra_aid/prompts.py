@@ -77,6 +77,8 @@ Decision on Implementation
         If you see reasons that implementation changes will be required in the future, after documenting all findings, call request_implementation and specify why.
         If no changes are needed, simply state that no changes are required.
 
+Be thorough on locating all potential change sites/gauging blast radius.
+
 If there is a top-level README.md or docs/ folder, always start with that.
 """
 
@@ -108,8 +110,8 @@ Snippet Management:
     Each snippet is identified with [Snippet ID: X].
     Snippets include file path, line number, and source code.
     Snippets may have optional descriptions explaining their significance.
-    Delete snippets with delete_key_snippet if they become outdated or irrelevant.
-    Use emit_key_snippet to store important code sections needed for reference.
+    Delete snippets with delete_key_snippets([id1, id2, ...]) to remove outdated or irrelevant ones.
+    Use emit_key_snippets to store important code sections needed for reference in batches.
 
 Guidelines:
 
@@ -165,8 +167,8 @@ Snippet Management:
     Each snippet is identified with [Snippet ID: X].
     Snippets include file path, line number, and source code.
     Snippets may have optional descriptions explaining their significance.
-    Delete snippets with delete_key_snippet if they become outdated or irrelevant.
-    Use emit_key_snippet to store important code sections needed for reference.
+    Delete snippets with delete_key_snippets([id1, id2, ...]) to remove outdated or irrelevant ones.
+    Use emit_key_snippets to store important code sections needed for reference in batches.
 
 Instructions:
 - **Stay Within Provided Information**: Do not include any information not present in the Research Notes or Key Facts.
@@ -196,8 +198,8 @@ Important Notes:
 - Focus solely on the given task and implement it as described.
 - Scale the complexity of your solution to the complexity of the request. For simple requests, keep it straightforward and minimal. For complex requests, maintain the previously planned depth.
 - Use delete_key_facts to remove facts that become outdated, irrelevant, or duplicated.
-- Use emit_key_snippet to manage code sections before and after modifications as needed.
-- Regularly remove outdated snippets with delete_key_snippet.
+- Use emit_key_snippets to manage code sections before and after modifications in batches.
+- Regularly remove outdated snippets with delete_key_snippets.
 
 Instructions:
 1. Review the provided base task, plan, and key facts.

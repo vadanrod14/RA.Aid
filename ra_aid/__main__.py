@@ -11,7 +11,7 @@ from ra_aid.tools import (
     ask_expert, run_shell_command, run_programming_task,
     emit_research_notes, emit_plan, emit_related_files, emit_task,
     emit_expert_context, get_memory_value, emit_key_facts, delete_key_facts,
-    emit_key_snippet, delete_key_snippet,
+    emit_key_snippets, delete_key_snippets,
     request_implementation, read_file_tool, emit_research_subtask,
     fuzzy_find_project_files, ripgrep_search, list_directory_tree
 )
@@ -62,9 +62,9 @@ planning_memory = MemorySaver()
 implementation_memory = MemorySaver()
 
 # Define tool sets for each stage
-research_tools = [list_directory_tree, emit_research_subtask, run_shell_command, emit_expert_context, ask_expert, emit_research_notes, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippet, delete_key_snippet, request_implementation, read_file_tool, fuzzy_find_project_files, ripgrep_search]
-planning_tools = [list_directory_tree, emit_expert_context, ask_expert, emit_plan, emit_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippet, delete_key_snippet, read_file_tool, fuzzy_find_project_files, ripgrep_search]
-implementation_tools = [list_directory_tree, run_shell_command, emit_expert_context, ask_expert, run_programming_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippet, delete_key_snippet, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+research_tools = [list_directory_tree, emit_research_subtask, run_shell_command, emit_expert_context, ask_expert, emit_research_notes, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, request_implementation, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+planning_tools = [list_directory_tree, emit_expert_context, ask_expert, emit_plan, emit_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+implementation_tools = [list_directory_tree, run_shell_command, emit_expert_context, ask_expert, run_programming_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
 
 # Create stage-specific agents with individual memory objects
 research_agent = create_react_agent(model, research_tools, checkpointer=research_memory)

@@ -168,71 +168,75 @@ def skip_implementation(reason: str) -> str:
     console.print(Panel(Markdown(reason), title="⏭️ Implementation Skipped"))
     return reason
 
-@tool("emit_key_snippet")
-def emit_key_snippet(filepath: str, line_number: int, snippet: str, description: Optional[str] = None) -> str:
-    """Store a key source code snippet in global memory.
+@tool("emit_key_snippets")
+def emit_key_snippets(snippets: List[SnippetInfo]) -> List[str]:
+    """Store multiple key source code snippets in global memory.
     
     Args:
-        filepath: Path to the source file
-        line_number: Line number where the snippet starts
-        snippet: The source code snippet text
-        description: Optional description of the snippet's significance
-        
+        snippets: List of snippet information dictionaries containing:
+                 - filepath: Path to the source file
+                 - line_number: Line number where the snippet starts  
+                 - snippet: The source code snippet text
+                 - description: Optional description of the significance
+                 
     Returns:
-        The stored snippet information
+        List of stored snippet confirmation messages
     """
-    # Get and increment snippet ID
-    snippet_id = _global_memory['key_snippet_id_counter']
-    _global_memory['key_snippet_id_counter'] += 1
-    
-    # Store snippet info
-    snippet_info: SnippetInfo = {
-        'filepath': filepath,
-        'line_number': line_number,
-        'snippet': snippet,
-        'description': description
-    }
-    _global_memory['key_snippets'][snippet_id] = snippet_info
-    
-    # Format display text as markdown
-    display_text = [
-        f"**Source Location**:",
-        f"- File: `{filepath}`",
-        f"- Line: `{line_number}`",
-        "",  # Empty line before code block
-        "**Code**:",
-        "```python",
-        snippet.rstrip(),  # Remove trailing whitespace
-        "```"
-    ]
-    if description:
-        display_text.extend(["", "**Description**:", description])
-    
-    # Display panel
-    console.print(Panel(Markdown("\n".join(display_text)), title=f"📝 Key Snippet #{snippet_id}", border_style="bright_cyan"))
-    
-    return f"Stored snippet #{snippet_id}"
+    results = []
+    for snippet_info in snippets:
+        # Get and increment snippet ID 
+        snippet_id = _global_memory['key_snippet_id_counter']
+        _global_memory['key_snippet_id_counter'] += 1
+        
+        # Store snippet info
+        _global_memory['key_snippets'][snippet_id] = snippet_info
+        
+        # Format display text as markdown
+        display_text = [
+            f"**Source Location**:",
+            f"- File: `{snippet_info['filepath']}`",
+            f"- Line: `{snippet_info['line_number']}`",
+            "",  # Empty line before code block
+            "**Code**:",
+            "```python",
+            snippet_info['snippet'].rstrip(),  # Remove trailing whitespace 
+            "```"
+        ]
+        if snippet_info['description']:
+            display_text.extend(["", "**Description**:", snippet_info['description']])
+            
+        # Display panel
+        console.print(Panel(Markdown("\n".join(display_text)), 
+                          title=f"📝 Key Snippet #{snippet_id}", 
+                          border_style="bright_cyan"))
+        
+        results.append(f"Stored snippet #{snippet_id}")
+        
+    return results
 
-@tool("delete_key_snippet")
-def delete_key_snippet(snippet_id: int) -> str:
-    """Delete a key snippet from global memory by its ID.
+@tool("delete_key_snippets") 
+def delete_key_snippets(snippet_ids: List[int]) -> List[str]:
+    """Delete multiple key snippets from global memory by their IDs.
+    Silently skips any IDs that don't exist.
     
     Args:
-        snippet_id: The ID of the snippet to delete
+        snippet_ids: List of snippet IDs to delete
         
     Returns:
-        A message indicating success or failure
+        List of success messages for deleted snippets
     """
-    if snippet_id not in _global_memory['key_snippets']:
-        error_msg = f"Error: No snippet found with ID #{snippet_id}"
-        console.print(Panel(Markdown(error_msg), title="❌ Delete Failed", border_style="red"))
-        return error_msg
-        
-    # Delete the snippet
-    deleted_snippet = _global_memory['key_snippets'].pop(snippet_id)
-    success_msg = f"Successfully deleted snippet #{snippet_id} from {deleted_snippet['filepath']}"
-    console.print(Panel(Markdown(success_msg), title="🗑️ Snippet Deleted", border_style="green"))
-    return success_msg
+    results = []
+    for snippet_id in snippet_ids:
+        if snippet_id in _global_memory['key_snippets']:
+            # Delete the snippet
+            deleted_snippet = _global_memory['key_snippets'].pop(snippet_id)
+            success_msg = f"Successfully deleted snippet #{snippet_id} from {deleted_snippet['filepath']}"
+            console.print(Panel(Markdown(success_msg), 
+                              title="🗑️ Snippet Deleted", 
+                              border_style="green"))
+            results.append(success_msg)
+            
+    return results
 
 def get_memory_value(key: str) -> str:
     """Get a value from global memory.

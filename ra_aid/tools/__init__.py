@@ -8,16 +8,16 @@ from .ripgrep import ripgrep_search
 from .memory import (
     emit_research_notes, emit_plan, emit_task, get_memory_value, emit_key_facts,
     request_implementation, skip_implementation, delete_key_facts, emit_research_subtask,
-    emit_key_snippet, delete_key_snippet
+    emit_key_snippets, delete_key_snippets
 )
 
 __all__ = [
     'ask_expert',
     'delete_key_facts',
-    'delete_key_snippet', 
-    'emit_expert_context',
+    'delete_key_snippets',
+    'emit_expert_context', 
     'emit_key_facts',
-    'emit_key_snippet',
+    'emit_key_snippets',
     'emit_plan',
     'emit_related_files',
     'emit_research_notes',
