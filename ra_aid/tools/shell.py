@@ -44,7 +44,9 @@ def run_shell_command(command: str) -> Dict[str, Union[str, int, bool]]:
     cowboy_mode = _global_memory.get('config', {}).get('cowboy_mode', False)
     
     if cowboy_mode:
+        console.print("")
         console.print(get_cowboy_message())
+        console.print("")
 
     # Show just the command in a simple panel
     console.print(Panel(command, title="🐚 Shell", border_style="bright_yellow"))

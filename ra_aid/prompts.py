@@ -80,6 +80,7 @@ Single-Shot Task Detection
         3. Call one_shot_completed() to immediately conclude the task
     
     Only use single-shot completion for truly straightforward tasks that don't require additional planning or extensive changes.
+    If the change is estimated to be less than 100 lines and less than 5 files, it is definitely a single-shot task.
 
 Thoroughness and Completeness
 
