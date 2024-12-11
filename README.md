@@ -18,7 +18,15 @@
 
 # RA.Aid
 
-RA.Aid is a powerful AI-driven command-line tool designed to assist developers and researchers in executing programming and research tasks efficiently. Built on top of LangChain and LLMs, it provides an intelligent assistant that can help with research, planning, and implementation of development tasks.
+RA.Aid is a powerful AI-driven command-line tool that integrates `aider` (https://aider.chat/) within a LangChain ReAct agent loop. This unique combination allows developers to leverage aider's code editing capabilities while benefiting from LangChain's agent-based task execution framework. The tool provides an intelligent assistant that can help with research, planning, and implementation of development tasks.
+
+What sets RA.Aid apart is its ability to handle complex programming tasks that extend beyond single-shot code edits. By combining research, strategic planning, and implementation into a cohesive workflow, RA.Aid can:
+
+- Break down and execute multi-step programming tasks
+- Research and analyze complex codebases to answer architectural questions
+- Plan and implement significant code changes across multiple files
+- Provide detailed explanations of existing code structure and functionality
+- Execute sophisticated refactoring operations with proper planning
 
 ## Table of Contents
 
@@ -34,7 +42,12 @@ RA.Aid is a powerful AI-driven command-line tool designed to assist developers a
 
 ## Features
 
-- **Three-Stage Architecture**: Implements a sophisticated workflow with Research, Planning, and Implementation stages, each powered by dedicated AI agents and toolsets.
+- **Three-Stage Architecture**: The workflow consists of three powerful stages:
+  1. **Research** 🔍 - Gather and analyze information
+  2. **Planning** 📋 - Develop execution strategy
+  3. **Implementation** ⚡ - Execute the plan with AI assistance
+  
+  Each stage is powered by dedicated AI agents and specialized toolsets.
 - **Advanced AI Integration**: Built on LangChain and leverages the latest LLMs for natural language understanding and generation.
 - **Comprehensive Toolset**:
   - Shell command execution
