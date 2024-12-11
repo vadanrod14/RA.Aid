@@ -46,6 +46,11 @@ Examples:
         action='store_true',
         help='Only perform research without implementation'
     )
+    parser.add_argument(
+        '--cowboy-mode',
+        action='store_true',
+        help='Skip interactive approval for shell commands'
+    )
     return parser.parse_args()
 
 # Create the base model
@@ -240,7 +245,8 @@ def main():
             "thread_id": "abc123"
         },
         "recursion_limit": 100,
-        "research_only": args.research_only
+        "research_only": args.research_only,
+        "cowboy_mode": args.cowboy_mode
     }
     
     # Store config in global memory for access by is_informational_query

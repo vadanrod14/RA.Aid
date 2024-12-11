@@ -24,6 +24,8 @@ RA.Aid (ReAct Aid) is a powerful AI-driven command-line tool that integrates `ai
 
 ⚠️ **IMPORTANT: USE AT YOUR OWN RISK** ⚠️
 - This tool **can and will** automatically execute shell commands on your system
+- Shell commands require interactive approval unless --cowboy-mode is enabled
+- The --cowboy-mode flag disables command approval and should be used with extreme caution
 - No warranty is provided, either express or implied
 - Always review the actions the agent proposes before allowing them to proceed
 
@@ -125,6 +127,7 @@ ra-aid -m "Explain the authentication flow" --research-only
 
 - `-m, --message`: The task or query to be executed (required)
 - `--research-only`: Only perform research without implementation
+- `--cowboy-mode`: Skip interactive approval for shell commands
 
 ### Example Tasks
 
@@ -141,6 +144,11 @@ ra-aid -m "Explain the authentication flow" --research-only
 3. Refactoring:
    ```bash
    ra-aid -m "Refactor the database connection code to use connection pooling"
+   ```
+
+4. Non-Interactive Mode:
+   ```bash
+   ra-aid -m "Update all deprecated API calls" --cowboy-mode
    ```
 
 ### Environment Variables
