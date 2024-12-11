@@ -49,5 +49,8 @@ Issues = "https://github.com/ai-christianson/ra-aid/issues"
 [tool.setuptools.dynamic]
 version = {attr = "ra_aid.version.__version__"}
 
+[tool.hatch.version]
+path = "ra_aid/__version__.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["ra_aid"]
