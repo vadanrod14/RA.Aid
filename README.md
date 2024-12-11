@@ -130,10 +130,25 @@ ra-aid -m "Explain the authentication flow" --research-only
 - `--cowboy-mode`: Skip interactive approval for shell commands
 
 ### Example Tasks
-
-1. Code Implementation:
+1. Code Analysis:
    ```bash
-   ra-aid -m "Add input validation to the user registration endpoint"
+   ra-aid -m "Explain how the authentication middleware works" --research-only
+   ```
+
+2. Complex Changes:
+   ```bash
+   ra-aid -m "Refactor the database connection code to use connection pooling" --cowboy-mode
+   ```
+
+3. Automated Updates:
+   ```bash
+   ra-aid -m "Update deprecated API calls across the entire codebase" --cowboy-mode
+   ```
+
+4. Code Research:
+   ```bash
+   ra-aid -m "Analyze the current error handling patterns" --research-only
+   ```
    ```
 
 2. Code Research:
@@ -143,13 +158,31 @@ ra-aid -m "Explain the authentication flow" --research-only
 
 3. Refactoring:
    ```bash
-   ra-aid -m "Refactor the database connection code to use connection pooling"
+   ra-aid -m "Refactor the database connection code to use connection pooling" --cowboy-mode
    ```
 
-4. Non-Interactive Mode:
-   ```bash
-   ra-aid -m "Update all deprecated API calls" --cowboy-mode
-   ```
+### Automating Code Changes with Cowboy Mode 🏇
+
+For situations where you need to automate code modifications without manual intervention—such as continuous integration/continuous deployment (CI/CD) pipelines, scripted batch operations, or large-scale refactoring—you can use the `--cowboy-mode` flag. This mode executes commands non-interactively, bypassing the usual confirmation prompts.
+
+```bash
+ra-aid -m "Update all deprecated API calls" --cowboy-mode
+```
+
+In the example above, the command will automatically find and update all deprecated API calls in your codebase **without** asking for confirmation before each change.
+
+**⚠️ Use with Extreme Caution:** Cowboy mode is a powerful tool that removes safety checks designed to prevent unintended modifications. While it enables efficient automation, it also increases the risk of errors propagating through your codebase. **Ensure you have proper backups or version control in place before using this mode.**
+
+**Appropriate Use Cases for Cowboy Mode:**
+
+- **CI/CD Pipelines:** Automate code changes as part of your deployment process.
+- **Scripted Batch Operations:** Apply repetitive changes across multiple files without manual approval.
+- **Controlled Environments:** Use in environments where changes can be reviewed and reverted if necessary.
+
+**When Not to Use Cowboy Mode:**
+
+- **Research or Experimental Changes:** When you are exploring solutions and unsure of the outcomes.
+- **Critical Codebases Without Backups:** If you don't have a way to revert changes, it's safer to use the interactive mode.
 
 ### Environment Variables
 
