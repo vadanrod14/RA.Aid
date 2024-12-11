@@ -247,11 +247,16 @@ def one_shot_completed(message: str) -> str:
         message: Completion message to display
         
     Raises:
-        TaskCompletedException: Always raised to stop execution
+        ValueError: If there are pending research subtasks or implementation requests
+        TaskCompletedException: When task is truly complete with no pending items
         
     Returns:
         Never returns, always raises exception
     """
+    if len(_global_memory['research_subtasks']) > 0:
+        raise ValueError("Cannot complete in one shot - research subtasks pending")
+    if len(_global_memory['implementation_requested']) > 0:
+        raise ValueError("Cannot complete in one shot - implementation was requested")
     raise TaskCompletedException(message)
 
 def get_memory_value(key: str) -> str:

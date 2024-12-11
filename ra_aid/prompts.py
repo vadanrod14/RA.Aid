@@ -66,16 +66,20 @@ Single-Shot Task Detection
 
     Autonomously determine if a task can be completed immediately without further planning:
         - Simple informational queries that can be answered directly from research
-        - Requests that don't require complex analysis or implementation
+        - Basic implementation tasks that don't require complex changes
         - Cases where further planning would not add value
         - Situations where immediate response meets all user requirements
 
+    One-shot completion will be blocked if:
+        - Research subtasks have been requested (must wait for research summary)
+        - Complex implementation has been explicitly requested
+
     If you determine a task can be completed in a single shot:
-        1. Complete the necessary research to fully answer the query
+        1. Complete the necessary research or basic implementation work
         2. Document your findings using emit_research_notes
         3. Call one_shot_completed() to immediately conclude the task
     
-    Only use single-shot completion when you are confident no implementation or further planning is needed.
+    Only use single-shot completion for truly straightforward tasks that don't require additional planning or extensive changes.
 
 Thoroughness and Completeness
 
