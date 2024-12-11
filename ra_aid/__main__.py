@@ -230,7 +230,8 @@ def validate_environment():
             print(f"- {error}", file=sys.stderr)
         sys.exit(1)
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the ra-aid command line tool."""
     validate_environment()
     args = parse_arguments()
     base_task = args.message
@@ -301,3 +302,6 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
             get_memory_value('plan'),
             related_files
         )
+
+if __name__ == "__main__":
+    main()
