@@ -86,37 +86,6 @@ def emit_research_subtask(subtask: str) -> str:
     console.print(Panel(Markdown(subtask), title="🔬 Research Subtask"))
     return f"Added research subtask: {subtask}"
 
-@tool("emit_key_fact")
-def emit_key_fact(fact: str) -> str:
-    """Store a key fact about the project or current task in global memory.
-
-    Key facts are things like:
-     - Specific files/functions to look at and what they do
-     - Coding conventions
-     - Specific external interfaces related to the task
-    
-    Key facts should be objective and not restating things already specified in our top-level task.
-
-    They are generally things that will not change throughout the duration of our top-level task.
-    
-    Args:
-        fact: The key fact to store
-        
-    Returns:
-        The stored fact
-    """
-    # Get and increment fact ID
-    fact_id = _global_memory['key_fact_id_counter']
-    _global_memory['key_fact_id_counter'] += 1
-    
-    # Store fact with ID
-    _global_memory['key_facts'][fact_id] = fact
-    
-    # Display panel with ID
-    console.print(Panel(Markdown(fact), title=f"💡 Key Fact #{fact_id}", border_style="bright_cyan"))
-    
-    # Return fact with ID
-    return f"Stored fact #{fact_id}: {fact}"
 
 @tool("emit_key_facts")
 def emit_key_facts(facts: List[str]) -> List[str]:
@@ -145,26 +114,6 @@ def emit_key_facts(facts: List[str]) -> List[str]:
         
     return results
 
-@tool("delete_key_fact")
-def delete_key_fact(fact_id: int) -> str:
-    """Delete a key fact from global memory by its ID.
-    
-    Args:
-        fact_id: The ID of the fact to delete
-        
-    Returns:
-        A message indicating success or failure
-    """
-    if fact_id not in _global_memory['key_facts']:
-        error_msg = f"Error: No fact found with ID #{fact_id}"
-        console.print(Panel(Markdown(error_msg), title="❌ Delete Failed", border_style="red"))
-        return error_msg
-        
-    # Delete the fact
-    deleted_fact = _global_memory['key_facts'].pop(fact_id)
-    success_msg = f"Successfully deleted fact #{fact_id}: {deleted_fact}"
-    console.print(Panel(Markdown(success_msg), title="🗑️ Fact Deleted", border_style="green"))
-    return success_msg
 
 @tool("delete_key_facts")
 def delete_key_facts(fact_ids: List[int]) -> List[str]:

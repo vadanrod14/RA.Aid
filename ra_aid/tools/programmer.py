@@ -75,30 +75,7 @@ def run_programming_task(input: RunProgrammingTaskInput) -> Dict[str, Union[str,
         "-m"
     ]
     
-    # Inject key facts into instructions if they exist
-    key_facts = get_memory_value('key_facts')
-    enhanced_instructions = input.instructions
-    
-    # Get and format snippets if they exist
-    key_snippets = get_memory_value('key_snippets')
-    
-    # Combine all sections
-    enhanced_instructions = f"""Key Facts About This Project:
-
-{key_facts}
-
-Key Code Snippets:
-
-{key_snippets}
-
-Instructions:
-
-{input.instructions}
-
-Only implement the immediate instructions, do not expand scope.
-"""
-    
-    command.append(enhanced_instructions)
+    command.append(input.instructions)
     
     # Use both input files and related files
     files_to_use = set(related_files)  # Start with related files
@@ -111,7 +88,7 @@ Only implement the immediate instructions, do not expand scope.
     # Create a pretty display of what we're doing
     task_display = [
         "## Instructions\n",
-        f"{enhanced_instructions}\n"
+        f"{input.instructions}\n"
     ]
     
     if files_to_use:

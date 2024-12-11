@@ -90,6 +90,9 @@ Research Notes:
 {research_notes}
 </notes>
 
+Relevant Files:
+{related_files}
+
 Key Facts:
 {key_facts}
 
@@ -98,8 +101,8 @@ Key Snippets:
 
 Fact Management:
     Each fact is identified with [Fact ID: X].
-    Facts may be deleted if they become outdated, irrelevant, or duplicates. 
-    Use delete_key_fact with the specific Fact ID to remove unnecessary facts.
+    Facts may be deleted if they become outdated, irrelevant, or duplicates.
+    Use delete_key_facts([id1, id2, ...]) with a list of numeric Fact IDs to remove unnecessary facts.
 
 Snippet Management:
     Each snippet is identified with [Snippet ID: X].
@@ -155,8 +158,8 @@ Key Snippets:
 
 Fact Management:
     Each fact is identified with [Fact ID: X].
-    Facts may be deleted if they become outdated, irrelevant, or duplicates. 
-    Use delete_key_fact with the specific Fact ID to remove unnecessary facts.
+    Facts may be deleted if they become outdated, irrelevant, or duplicates.
+    Use delete_key_facts([id1, id2, ...]) with a list of numeric Fact IDs to remove unnecessary facts.
 
 Snippet Management:
     Each snippet is identified with [Snippet ID: X].
@@ -192,7 +195,7 @@ Relevant Files:
 Important Notes:
 - Focus solely on the given task and implement it as described.
 - Scale the complexity of your solution to the complexity of the request. For simple requests, keep it straightforward and minimal. For complex requests, maintain the previously planned depth.
-- Use delete_key_fact to remove facts that become outdated, irrelevant, or duplicated.
+- Use delete_key_facts to remove facts that become outdated, irrelevant, or duplicated.
 - Use emit_key_snippet to manage code sections before and after modifications as needed.
 - Regularly remove outdated snippets with delete_key_snippet.
 
@@ -202,9 +205,10 @@ Instructions:
    {task}
 
 3. Work incrementally, validating as you go.
-4. Update or remove any key facts that no longer apply.
+4. Use delete_key_facts to remove any key facts that no longer apply.
 5. Do not add features not explicitly required.
 6. Only create or modify files directly related to this task.
+7. For trivial changes, use sed and awk judiciously via the run_shell_command tool.
 
 Once the task is complete, ensure all updated files are emitted.
 """
