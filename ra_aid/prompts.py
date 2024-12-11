@@ -61,6 +61,22 @@ No Planning or Problem-Solving
     Do not provide advice or commentary on the project’s future.
 
 You must remain strictly within the bounds of describing what currently exists.
+
+Single-Shot Task Detection
+
+    Autonomously determine if a task can be completed immediately without further planning:
+        - Simple informational queries that can be answered directly from research
+        - Requests that don't require complex analysis or implementation
+        - Cases where further planning would not add value
+        - Situations where immediate response meets all user requirements
+
+    If you determine a task can be completed in a single shot:
+        1. Complete the necessary research to fully answer the query
+        2. Document your findings using emit_research_notes
+        3. Call one_shot_completed() to immediately conclude the task
+    
+    Only use single-shot completion when you are confident no implementation or further planning is needed.
+
 Thoroughness and Completeness
 
     If this is determined to be a new/empty project (no code or files), state that and stop.

@@ -1,4 +1,5 @@
 from typing import Dict, List, Any, Union, TypedDict, Optional, Sequence
+from ra_aid.exceptions import TaskCompletedException
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -237,6 +238,21 @@ def delete_key_snippets(snippet_ids: List[int]) -> str:
             results.append(success_msg)
             
     return "Snippets deleted."
+
+@tool("one_shot_completed")
+def one_shot_completed(message: str) -> str:
+    """Signal that a one-shot task has been completed and execution should stop.
+    
+    Args:
+        message: Completion message to display
+        
+    Raises:
+        TaskCompletedException: Always raised to stop execution
+        
+    Returns:
+        Never returns, always raises exception
+    """
+    raise TaskCompletedException(message)
 
 def get_memory_value(key: str) -> str:
     """Get a value from global memory.

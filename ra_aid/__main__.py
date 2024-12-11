@@ -24,6 +24,7 @@ from ra_aid.prompts import (
     IMPLEMENTATION_PROMPT,
     SUMMARY_PROMPT
 )
+from ra_aid.exceptions import TaskCompletedException
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -237,78 +238,85 @@ def validate_environment():
 
 def main():
     """Main entry point for the ra-aid command line tool."""
-    validate_environment()
-    args = parse_arguments()
-    base_task = args.message
-    config = {
-        "configurable": {
-            "thread_id": "abc123"
-        },
-        "recursion_limit": 100,
-        "research_only": args.research_only,
-        "cowboy_mode": args.cowboy_mode
-    }
-    
-    # Store config in global memory for access by is_informational_query
-    _global_memory['config'] = config
+    try:
+        validate_environment()
+        args = parse_arguments()
+        base_task = args.message
+        config = {
+            "configurable": {
+                "thread_id": "abc123"
+            },
+            "recursion_limit": 100,
+            "research_only": args.research_only,
+            "cowboy_mode": args.cowboy_mode
+        }
+        
+        # Store config in global memory for access by is_informational_query
+        _global_memory['config'] = config
 
-    # Run research stage
-    print_stage_header("RESEARCH STAGE")
-    research_prompt = f"""User query: {base_task} --keep it simple
+        # Run research stage
+        print_stage_header("RESEARCH STAGE")
+        research_prompt = f"""User query: {base_task} --keep it simple
 
 {RESEARCH_PROMPT}
 
 Be very thorough in your research and emit lots of snippets, key facts. If you take more than a few steps, be eager to emit research subtasks.{'' if args.research_only else ' Only request implementation if the user explicitly asked for changes to be made.'}"""
 
-    while True:
         try:
-            for chunk in research_agent.stream(
-                {"messages": [HumanMessage(content=research_prompt)]}, 
-                config
-            ):
-                print_agent_output(chunk)
-            break
-        except ChatAnthropic.InternalServerError as e:
-            print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-            continue
+            while True:
+                try:
+                    for chunk in research_agent.stream(
+                        {"messages": [HumanMessage(content=research_prompt)]}, 
+                        config
+                    ):
+                        print_agent_output(chunk)
+                    break
+                except ChatAnthropic.InternalServerError as e:
+                    print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
+                    continue
+        except TaskCompletedException as e:
+            print_stage_header("TASK COMPLETED")
+            raise  # Re-raise to be caught by outer handler
 
-    # Run any research subtasks
-    run_research_subtasks(base_task, config)
-    
-    # For informational queries, summarize findings
-    if is_informational_query():
-        summarize_research_findings(base_task, config)
-    else:
-        # Only proceed with planning and implementation if not an informational query
-        print_stage_header("PLANNING STAGE")
-        planning_prompt = PLANNING_PROMPT.format(
-            research_notes=get_memory_value('research_notes'),
-            key_facts=get_memory_value('key_facts'),
-            key_snippets=get_memory_value('key_snippets'),
-            base_task=base_task,
-            related_files="\n".join(related_files)
-        )
+        # Run any research subtasks
+        run_research_subtasks(base_task, config)
+        
+        # For informational queries, summarize findings
+        if is_informational_query():
+            summarize_research_findings(base_task, config)
+        else:
+            # Only proceed with planning and implementation if not an informational query
+            print_stage_header("PLANNING STAGE")
+            planning_prompt = PLANNING_PROMPT.format(
+                research_notes=get_memory_value('research_notes'),
+                key_facts=get_memory_value('key_facts'),
+                key_snippets=get_memory_value('key_snippets'),
+                base_task=base_task,
+                related_files="\n".join(related_files)
+            )
 
-        # Run planning agent
-        while True:
-            try:
-                for chunk in planning_agent.stream(
-                    {"messages": [HumanMessage(content=planning_prompt)]}, 
-                    config
-                ):
-                    print_agent_output(chunk)
-                break
-            except ChatAnthropic.InternalServerError as e:
-                print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-                continue
+            # Run planning agent
+            while True:
+                try:
+                    for chunk in planning_agent.stream(
+                        {"messages": [HumanMessage(content=planning_prompt)]}, 
+                        config
+                    ):
+                        print_agent_output(chunk)
+                    break
+                except ChatAnthropic.InternalServerError as e:
+                    print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
+                    continue
 
-        # Run implementation stage with task-specific agents
-        run_implementation_stage(
-            base_task,
-            get_memory_value('tasks'),
-            get_memory_value('plan'),
-            related_files
-        )
+            # Run implementation stage with task-specific agents
+            run_implementation_stage(
+                base_task,
+                get_memory_value('tasks'),
+                get_memory_value('plan'),
+                related_files
+            )
+    except TaskCompletedException:
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
