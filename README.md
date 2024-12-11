@@ -1,3 +1,5 @@
+  ```ascii
+
   ██▀███   ▄▄▄            ▄▄▄       ██▓▓█████▄ 
  ▓██ ▒ ██▒▒████▄         ▒████▄    ▓██▒▒██▀ ██▌
  ▓██ ░▄█ ▒▒██  ▀█▄       ▒██  ▀█▄  ▒██▒░██   █▌
@@ -8,6 +10,7 @@
    ░░   ░   ░   ▒    ░     ░   ▒    ▒ ░ ░ ░  ░ 
     ░           ░  ░  ░        ░  ░ ░     ░    
                       ░                 ░      
+```
 
 [![Python Versions](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
