@@ -84,11 +84,11 @@ def emit_research_subtask(subtask: str) -> str:
     """
     _global_memory['research_subtasks'].append(subtask)
     console.print(Panel(Markdown(subtask), title="🔬 Research Subtask"))
-    return f"Added research subtask: {subtask}"
+    return "Subtask added."
 
 
 @tool("emit_key_facts")
-def emit_key_facts(facts: List[str]) -> List[str]:
+def emit_key_facts(facts: List[str]) -> str:
     """Store multiple key facts about the project or current task in global memory.
     
     Args:
@@ -112,11 +112,11 @@ def emit_key_facts(facts: List[str]) -> List[str]:
         # Add result message
         results.append(f"Stored fact #{fact_id}: {fact}")
         
-    return results
+    return "Facts stored."
 
 
 @tool("delete_key_facts")
-def delete_key_facts(fact_ids: List[int]) -> List[str]:
+def delete_key_facts(fact_ids: List[int]) -> str:
     """Delete multiple key facts from global memory by their IDs.
     Silently skips any IDs that don't exist.
     
@@ -135,7 +135,7 @@ def delete_key_facts(fact_ids: List[int]) -> List[str]:
             console.print(Panel(Markdown(success_msg), title="🗑️ Fact Deleted", border_style="green"))
             results.append(success_msg)
             
-    return results
+    return "Facts deleted."
 
 @tool("request_implementation")
 def request_implementation(reason: str) -> str:
@@ -169,7 +169,7 @@ def skip_implementation(reason: str) -> str:
     return reason
 
 @tool("emit_key_snippets")
-def emit_key_snippets(snippets: List[SnippetInfo]) -> List[str]:
+def emit_key_snippets(snippets: List[SnippetInfo]) -> str:
     """Store multiple key source code snippets in global memory.
     
     Args:
@@ -212,10 +212,10 @@ def emit_key_snippets(snippets: List[SnippetInfo]) -> List[str]:
         
         results.append(f"Stored snippet #{snippet_id}")
         
-    return results
+    return "Snippets stored."
 
 @tool("delete_key_snippets") 
-def delete_key_snippets(snippet_ids: List[int]) -> List[str]:
+def delete_key_snippets(snippet_ids: List[int]) -> str:
     """Delete multiple key snippets from global memory by their IDs.
     Silently skips any IDs that don't exist.
     
@@ -236,7 +236,7 @@ def delete_key_snippets(snippet_ids: List[int]) -> List[str]:
                               border_style="green"))
             results.append(success_msg)
             
-    return results
+    return "Snippets deleted."
 
 def get_memory_value(key: str) -> str:
     """Get a value from global memory.

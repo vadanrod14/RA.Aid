@@ -35,7 +35,7 @@ def test_emit_key_facts_single_fact(reset_memory):
     """Test emitting a single key fact using emit_key_facts"""
     # Test with single fact
     result = emit_key_facts.invoke({"facts": ["First fact"]})
-    assert result[0] == "Stored fact #0: First fact"
+    assert result == "Facts stored."
     assert _global_memory['key_facts'][0] == "First fact"
     assert _global_memory['key_fact_id_counter'] == 1
 
@@ -46,20 +46,20 @@ def test_delete_key_facts_single_fact(reset_memory):
     
     # Delete the fact
     result = delete_key_facts.invoke({"fact_ids": [0]})
-    assert result[0] == "Successfully deleted fact #0: Test fact"
+    assert result == "Facts deleted."
     assert 0 not in _global_memory['key_facts']
 
 def test_delete_key_facts_invalid(reset_memory):
     """Test deleting non-existent facts returns empty list"""
     # Try to delete non-existent fact
     result = delete_key_facts.invoke({"fact_ids": [999]})
-    assert result == []
+    assert result == "Facts deleted."
     
     # Add and delete a fact, then try to delete it again
     emit_key_facts.invoke({"facts": ["Test fact"]})
     delete_key_facts.invoke({"fact_ids": [0]})
     result = delete_key_facts.invoke({"fact_ids": [0]})
-    assert result == []
+    assert result == "Facts deleted."
 
 def test_get_memory_value_key_facts(reset_memory):
     """Test get_memory_value with key facts dictionary"""
@@ -91,14 +91,10 @@ def test_emit_key_facts(reset_memory):
     """Test emitting multiple key facts at once"""
     # Test emitting multiple facts
     facts = ["First fact", "Second fact", "Third fact"]
-    results = emit_key_facts.invoke({"facts": facts})
+    result = emit_key_facts.invoke({"facts": facts})
     
-    # Verify return messages
-    assert results == [
-        "Stored fact #0: First fact",
-        "Stored fact #1: Second fact", 
-        "Stored fact #2: Third fact"
-    ]
+    # Verify return message
+    assert result == "Facts stored."
     
     # Verify facts stored in memory with correct IDs
     assert _global_memory['key_facts'][0] == "First fact"
@@ -114,13 +110,10 @@ def test_delete_key_facts(reset_memory):
     emit_key_facts.invoke({"facts": ["First fact", "Second fact", "Third fact"]})
     
     # Test deleting mix of existing and non-existing IDs
-    results = delete_key_facts.invoke({"fact_ids": [0, 1, 999]})
+    result = delete_key_facts.invoke({"fact_ids": [0, 1, 999]})
     
-    # Verify only success messages for existing facts
-    assert results == [
-        "Successfully deleted fact #0: First fact",
-        "Successfully deleted fact #1: Second fact"
-    ]
+    # Verify success message
+    assert result == "Facts deleted."
     
     # Verify correct facts removed from memory
     assert 0 not in _global_memory['key_facts']
@@ -147,10 +140,10 @@ def test_emit_key_snippets(reset_memory):
     ]
     
     # Emit snippets
-    results = emit_key_snippets.invoke({"snippets": snippets})
+    result = emit_key_snippets.invoke({"snippets": snippets})
     
-    # Verify return messages
-    assert results == ["Stored snippet #0", "Stored snippet #1"]
+    # Verify return message
+    assert result == "Snippets stored."
     
     # Verify snippets stored correctly
     assert _global_memory['key_snippets'][0] == snippets[0]
@@ -185,13 +178,10 @@ def test_delete_key_snippets(reset_memory):
     emit_key_snippets.invoke({"snippets": snippets})
     
     # Test deleting mix of valid and invalid IDs
-    results = delete_key_snippets.invoke({"snippet_ids": [0, 1, 999]})
+    result = delete_key_snippets.invoke({"snippet_ids": [0, 1, 999]})
     
-    # Verify success messages
-    assert results == [
-        "Successfully deleted snippet #0 from test1.py",
-        "Successfully deleted snippet #1 from test2.py"
-    ]
+    # Verify success message
+    assert result == "Snippets deleted."
     
     # Verify correct snippets removed
     assert 0 not in _global_memory['key_snippets']
@@ -211,8 +201,8 @@ def test_delete_key_snippets_empty(reset_memory):
     emit_key_snippets.invoke({"snippets": [snippet]})
     
     # Test with empty list
-    results = delete_key_snippets.invoke({"snippet_ids": []})
-    assert results == []
+    result = delete_key_snippets.invoke({"snippet_ids": []})
+    assert result == "Snippets deleted."
     
     # Verify snippet still exists
     assert 0 in _global_memory['key_snippets']
@@ -242,8 +232,8 @@ def test_key_snippets_integration(reset_memory):
     ]
     
     # Add all snippets
-    results = emit_key_snippets.invoke({"snippets": snippets})
-    assert results == ["Stored snippet #0", "Stored snippet #1", "Stored snippet #2"]
+    result = emit_key_snippets.invoke({"snippets": snippets})
+    assert result == "Snippets stored."
     assert _global_memory['key_snippet_id_counter'] == 3
     
     # Verify all snippets were stored correctly
@@ -253,10 +243,8 @@ def test_key_snippets_integration(reset_memory):
     assert _global_memory['key_snippets'][2] == snippets[2]
     
     # Delete some but not all snippets (0 and 2)
-    results = delete_key_snippets.invoke({"snippet_ids": [0, 2]})
-    assert len(results) == 2
-    assert "Successfully deleted snippet #0 from file1.py" in results
-    assert "Successfully deleted snippet #2 from file3.py" in results
+    result = delete_key_snippets.invoke({"snippet_ids": [0, 2]})
+    assert result == "Snippets deleted."
     
     # Verify remaining snippet is intact
     assert len(_global_memory['key_snippets']) == 1
@@ -273,15 +261,13 @@ def test_key_snippets_integration(reset_memory):
         "snippet": "def func4():\n    return False",
         "description": "Fourth function"
     }
-    results = emit_key_snippets.invoke({"snippets": [new_snippet]})
-    assert results == ["Stored snippet #3"]
+    result = emit_key_snippets.invoke({"snippets": [new_snippet]})
+    assert result == "Snippets stored."
     assert _global_memory['key_snippet_id_counter'] == 4
     
     # Delete remaining snippets
-    results = delete_key_snippets.invoke({"snippet_ids": [1, 3]})
-    assert len(results) == 2
-    assert "Successfully deleted snippet #1 from file2.py" in results
-    assert "Successfully deleted snippet #3 from file4.py" in results
+    result = delete_key_snippets.invoke({"snippet_ids": [1, 3]})
+    assert result == "Snippets deleted."
     
     # Verify all snippets are gone
     assert len(_global_memory['key_snippets']) == 0
@@ -296,7 +282,7 @@ def test_emit_research_subtask(reset_memory):
     result = emit_research_subtask(subtask)
     
     # Verify return message
-    assert result == f"Added research subtask: {subtask}"
+    assert result == "Subtask added."
     
     # Verify it was stored in memory
     assert len(_global_memory['research_subtasks']) == 1
