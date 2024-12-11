@@ -1,5 +1,8 @@
 import sqlite3
 import argparse
+import os
+import sys
+import shutil
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
@@ -24,13 +27,24 @@ from ra_aid.prompts import (
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='AI Agent for executing programming and research tasks',
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        description='RA.Aid - AI Agent for executing programming and research tasks',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+Examples:
+    ra-aid -m "Add error handling to the database module"
+    ra-aid -m "Explain the authentication flow" --research-only
+        '''
     )
     parser.add_argument(
-        'task',
+        '-m', '--message',
         type=str,
-        help='The task to be executed by the agent'
+        required=True,
+        help='The task or query to be executed by the agent'
+    )
+    parser.add_argument(
+        '--research-only',
+        action='store_true',
+        help='Only perform research without implementation'
     )
     return parser.parse_args()
 
@@ -59,7 +73,8 @@ def is_informational_query() -> bool:
     Returns:
         bool: True if query is informational (no implementation requested), False otherwise
     """
-    return not is_stage_requested('implementation')
+    # Check both the research_only flag and implementation_requested state
+    return _global_memory.get('config', {}).get('research_only', False) or not is_stage_requested('implementation')
 
 def is_stage_requested(stage: str) -> bool:
     """Check if a stage has been requested to proceed.
@@ -147,7 +162,7 @@ def summarize_research_findings(base_task: str, config: dict) -> None:
     while True:
         try:
             for chunk in summary_agent.stream(
-                {"messages": [HumanMessage(content=summary_prompt)]},
+                {"messages": [HumanMessage(content=summary_prompt)]}, 
                 config
             ):
                 print_agent_output(chunk)
@@ -195,17 +210,53 @@ def run_research_subtasks(base_task: str, config: dict):
                 print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
                 continue
 
+def validate_environment():
+    """Validate required environment variables and dependencies."""
+    missing = []
+    
+    # Check API keys
+    if not os.environ.get('ANTHROPIC_API_KEY'):
+        missing.append('ANTHROPIC_API_KEY environment variable is not set')
+    if not os.environ.get('OPENAI_API_KEY'):
+        missing.append('OPENAI_API_KEY environment variable is not set')
+    
+    # Check for aider binary
+    if not shutil.which('aider'):
+        missing.append('aider binary not found in PATH. Please install aider: pip install aider')
+    
+    if missing:
+        print("Error: Missing required dependencies:", file=sys.stderr)
+        for error in missing:
+            print(f"- {error}", file=sys.stderr)
+        sys.exit(1)
+
 if __name__ == "__main__":
+    validate_environment()
     args = parse_arguments()
-    base_task = args.task
-    config = {"configurable": {"thread_id": "abc123"}, "recursion_limit": 100}
+    base_task = args.message
+    config = {
+        "configurable": {
+            "thread_id": "abc123"
+        },
+        "recursion_limit": 100,
+        "research_only": args.research_only
+    }
+    
+    # Store config in global memory for access by is_informational_query
+    _global_memory['config'] = config
 
     # Run research stage
     print_stage_header("RESEARCH STAGE")
+    research_prompt = f"""User query: {base_task}
+
+{RESEARCH_PROMPT}
+
+Be very thorough in your research and emit lots of snippets, key facts. If you take more than a few steps, be eager to emit research subtasks.{'' if args.research_only else ' Only request implementation if the user explicitly asked for changes to be made.'}"""
+
     while True:
         try:
             for chunk in research_agent.stream(
-                {"messages": [HumanMessage(content=f"User query: {base_task}\n\n{RESEARCH_PROMPT}\n\nBe very thorough in your research and emit lots of snippets, key facts. If you take more than a few steps, be eager to emit research subtasks. Only request implementation if the user explicitly asked for changes to be made.")]}, 
+                {"messages": [HumanMessage(content=research_prompt)]}, 
                 config
             ):
                 print_agent_output(chunk)

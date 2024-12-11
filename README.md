@@ -20,6 +20,22 @@
 
 RA.Aid (ReAct Aid) is a powerful AI-driven command-line tool that integrates `aider` (https://aider.chat/) within a LangChain ReAct agent loop. This unique combination allows developers to leverage aider's code editing capabilities while benefiting from LangChain's agent-based task execution framework. The tool provides an intelligent assistant that can help with research, planning, and implementation of development tasks.
 
+⚠️ **IMPORTANT: USE AT YOUR OWN RISK** ⚠️
+- This tool **can and will** automatically execute shell commands on your system
+- No warranty is provided, either express or implied
+- Always review the actions the agent proposes before allowing them to proceed
+
+## Key Features
+
+- **Multi-Step Task Planning**: The agent breaks down complex tasks into discrete, manageable steps and executes them sequentially. This systematic approach ensures thorough implementation and reduces errors.
+
+- **Automated Command Execution**: The agent can run shell commands automatically to accomplish tasks. While this makes it powerful, it also means you should carefully review its actions.
+
+- **Three-Stage Architecture**:
+  1. **Research**: Analyzes codebases and gathers context
+  2. **Planning**: Breaks down tasks into specific, actionable steps
+  3. **Implementation**: Executes each planned step sequentially
+
 What sets RA.Aid apart is its ability to handle complex programming tasks that extend beyond single-shot code edits. By combining research, strategic planning, and implementation into a cohesive workflow, RA.Aid can:
 
 - Break down and execute multi-step programming tasks
@@ -62,69 +78,75 @@ What sets RA.Aid apart is its ability to handle complex programming tasks that e
 
 ## Installation
 
-### Prerequisites
+RA.Aid can be installed directly using pip:
 
-- Python 3.8 or higher
-- pip package manager
-
-### Steps
-
-1. Install from PyPI:
 ```bash
 pip install ra-aid
 ```
 
-Or install from source:
+### Prerequisites
+
+Before using RA.Aid, you'll need to set up your API keys for the required AI services:
+
 ```bash
-git clone https://github.com/ai-christianson/ra-aid.git
-cd ra-aid
-pip install .
+# Required: Set up your Anthropic API key
+export ANTHROPIC_API_KEY=your_api_key_here
+
+# Optional: Set up OpenAI API key if using OpenAI features
+export OPENAI_API_KEY=your_api_key_here
 ```
 
-2. Install additional dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. (Optional) Install development dependencies:
-```bash
-pip install -r requirements-dev.txt
-```
+You can get your API keys from:
+- Anthropic API key: https://console.anthropic.com/
+- OpenAI API key: https://platform.openai.com/api-keys
 
 ## Usage
 
-RA.Aid is used via the `ra-aid` command. The basic usage pattern is:
+RA.Aid is designed to be simple yet powerful. Here's how to use it:
 
 ```bash
-ra-aid [task]
+# Basic usage
+ra-aid -m "Your task or query here"
+
+# Research-only mode (no implementation)
+ra-aid -m "Explain the authentication flow" --research-only
 ```
 
-### Examples
+### Command Line Options
 
-Research a topic:
+- `-m, --message`: The task or query to be executed (required)
+- `--research-only`: Only perform research without implementation
+
+### Example Tasks
+
+1. Code Implementation:
+   ```bash
+   ra-aid -m "Add input validation to the user registration endpoint"
+   ```
+
+2. Code Research:
+   ```bash
+   ra-aid -m "Explain how the authentication middleware works" --research-only
+   ```
+
+3. Refactoring:
+   ```bash
+   ra-aid -m "Refactor the database connection code to use connection pooling"
+   ```
+
+### Environment Variables
+
+RA.Aid uses the following environment variables:
+
+- `ANTHROPIC_API_KEY` (Required): Your Anthropic API key for accessing Claude
+- `OPENAI_API_KEY` (Optional): Your OpenAI API key if using OpenAI features
+
+You can set these permanently in your shell's configuration file (e.g., `~/.bashrc` or `~/.zshrc`):
+
 ```bash
-ra-aid "Research best practices for Python package structure"
+export ANTHROPIC_API_KEY=your_api_key_here
+export OPENAI_API_KEY=your_api_key_here
 ```
-
-Plan a development task:
-```bash
-ra-aid "Plan the implementation of a new REST API endpoint"
-```
-
-Generate code or documentation:
-```bash
-ra-aid "Create a README.md template for my project"
-```
-
-### Interactive Mode
-
-For an interactive session where you can enter multiple tasks:
-
-```bash
-ra-aid
-```
-
-This will start an interactive prompt where you can input tasks sequentially.
 
 ## Architecture
 
