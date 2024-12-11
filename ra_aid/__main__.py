@@ -98,10 +98,10 @@ def is_stage_requested(stage: str) -> bool:
 def run_implementation_stage(base_task, tasks, plan, related_files):
     """Run implementation stage with a distinct agent for each task."""
     if not is_stage_requested('implementation'):
-        print_stage_header("SKIPPING IMPLEMENTATION STAGE (not requested)")
+        print_stage_header("Implementation Stage Skipped")
         return
         
-    print_stage_header("IMPLEMENTATION STAGE")
+    print_stage_header("Implementation Stage")
     
     # Get tasks directly from memory instead of using get_memory_value which joins with newlines
     task_list = _global_memory['tasks']
@@ -150,7 +150,7 @@ def summarize_research_findings(base_task: str, config: dict) -> None:
         base_task: The original user query
         config: Configuration dictionary for the agent
     """
-    print_stage_header("RESEARCH SUMMARY")
+    print_stage_header("Research Summary")
     
     # Create dedicated memory for research summarization
     summary_memory = MemorySaver()
@@ -183,7 +183,7 @@ def run_research_subtasks(base_task: str, config: dict):
     if not subtasks:
         return
         
-    print_stage_header("RESEARCH SUBTASKS")
+    print_stage_header("Research Subtasks")
     
     # Create tools for subtask agents (excluding spawn_research_subtask and request_implementation)
     subtask_tools = [
@@ -255,7 +255,7 @@ def main():
         _global_memory['config'] = config
 
         # Run research stage
-        print_stage_header("RESEARCH STAGE")
+        print_stage_header("Research Stage")
         research_prompt = f"""User query: {base_task} --keep it simple
 
 {RESEARCH_PROMPT}
@@ -275,7 +275,7 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
                     print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
                     continue
         except TaskCompletedException as e:
-            print_stage_header("TASK COMPLETED")
+            print_stage_header("Task Completed")
             raise  # Re-raise to be caught by outer handler
 
         # Run any research subtasks
@@ -286,7 +286,7 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
             summarize_research_findings(base_task, config)
         else:
             # Only proceed with planning and implementation if not an informational query
-            print_stage_header("PLANNING STAGE")
+            print_stage_header("Planning Stage")
             planning_prompt = PLANNING_PROMPT.format(
                 research_notes=get_memory_value('research_notes'),
                 key_facts=get_memory_value('key_facts'),
