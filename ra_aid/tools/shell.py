@@ -45,7 +45,7 @@ def run_shell_command(command: str) -> Dict[str, Union[str, int, bool]]:
     
     if cowboy_mode:
         console.print("")
-        console.print(get_cowboy_message())
+        console.print(" " + get_cowboy_message())
         console.print("")
 
     # Show just the command in a simple panel

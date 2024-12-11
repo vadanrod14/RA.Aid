@@ -33,7 +33,9 @@ def print_stage_header(stage: str) -> None:
     
     # Create styled rule with icon
     rule_content = f"{icon} {stage_title} {icon}"
+    console.print()
     console.print(Rule(rule_content, style="green bold"))
+    console.print()
 
 def print_task_header(task: str) -> None:
     """Print a task header with yellow styling and wrench emoji. Content is rendered as Markdown.

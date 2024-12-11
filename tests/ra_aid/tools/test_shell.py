@@ -31,7 +31,7 @@ def test_shell_command_cowboy_mode(mock_console, mock_confirm, mock_run_interact
     mock_confirm.ask.assert_not_called()
 
 def test_shell_command_cowboy_message(mock_console, mock_confirm, mock_run_interactive):
-    """Test that cowboy mode displays a cowboy message"""
+    """Test that cowboy mode displays a properly formatted cowboy message with correct spacing"""
     _global_memory['config'] = {'cowboy_mode': True}
     
     with patch('ra_aid.tools.shell.get_cowboy_message') as mock_get_message:
@@ -39,7 +39,9 @@ def test_shell_command_cowboy_message(mock_console, mock_confirm, mock_run_inter
         result = run_shell_command("echo test")
     
     assert result['success'] is True
-    mock_console.print.assert_any_call('🤠 Test cowboy message!')
+    mock_console.print.assert_any_call("")
+    mock_console.print.assert_any_call(" 🤠 Test cowboy message!")
+    mock_console.print.assert_any_call("")
     mock_get_message.assert_called_once()
 
 def test_shell_command_interactive_approved(mock_console, mock_confirm, mock_run_interactive):
