@@ -6,6 +6,7 @@ from rich.prompt import Confirm
 from ra_aid.tools.memory import _global_memory
 from ra_aid.proc.interactive import run_interactive_command
 from ra_aid.text.processing import truncate_output
+from ra_aid.console.cowboy_messages import get_cowboy_message
 
 console = Console()
 
@@ -44,6 +45,9 @@ def run_shell_command(command: str) -> Dict[str, Union[str, int, bool]]:
 
     # Check if we need approval
     cowboy_mode = _global_memory.get('config', {}).get('cowboy_mode', False)
+    
+    if cowboy_mode:
+        console.print(get_cowboy_message())
     
     if not cowboy_mode:
         if not Confirm.ask("Execute this command?", default=True):
