@@ -11,11 +11,11 @@ def print_stage_header(stage: str) -> None:
     Args:
         stage: The stage name to print (automatically formatted to Title Case)
     """
-    # Define stage icons mapping
+    # Define stage icons mapping - using single-width emojis to prevent line wrapping issues
     icons = {
         'research stage': '🔎',
         'planning stage': '📝',
-        'implementation stage': '🛠️', 
+        'implementation stage': '🔧',  # Changed from 🛠️ to prevent wrapping
         'task completed': '✅',
         'debug stage': '🐛',
         'testing stage': '🧪',
