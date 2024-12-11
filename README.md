@@ -16,7 +16,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Status](https://img.shields.io/badge/status-Beta-yellow)]()
 
-[![asciicast](https://asciinema.org/a/FaO9rQ89jpXwHXx64Cj3ZNCYu.svg)](https://asciinema.org/a/FaO9rQ89jpXwHXx64Cj3ZNCYu)
+<img src="assets/demo.gif" alt="RA.Aid Demo" autoplay loop style="width: 100%; max-width: 800px;">
 
 # RA.Aid
 
