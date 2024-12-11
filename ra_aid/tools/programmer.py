@@ -1,5 +1,5 @@
 import subprocess
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Dict, Union, Set
 from langchain_core.tools import tool
 from rich.console import Console
 from rich.panel import Panel
@@ -14,29 +14,40 @@ from ra_aid.text.processing import truncate_output
 console = Console()
 
 # Keep track of related files globally
-related_files = []
+related_files: List[str] = []
+related_files_set: Set[str] = set()
 
-@tool
-def emit_related_file(file: str) -> str:
-    """Add a single file to the list of files that the programmer tool should work with.
+@tool("emit_related_files")
+def emit_related_files(files: List[str]) -> List[str]:
+    """Store multiple related files that the programmer tool should work with.
     
     Args:
-        file: File path to add
+        files: List of file paths to add
         
     Returns:
-        A confirmation message with the added file
+        List of confirmation messages for added files
     """
-    global related_files
+    global related_files, related_files_set
+    results = []
+    added_files = []
     
-    # Check if file is already in the set
-    if file not in related_files:
-        related_files.append(file)
+    # Process unique files
+    for file in set(files):  # Remove duplicates in input
+        if file not in related_files_set:
+            related_files.append(file)
+            related_files_set.add(file)
+            added_files.append(file)
+            results.append(f"Added related file: {file}")
     
-    md_content = f"`{file}`"
+    # Rich output - single consolidated panel
+    if added_files:
+        files_added_md = '\n'.join(f"- `{file}`" for file in added_files)
+        md_content = f"**Files Added:**\n{files_added_md}"
+        console.print(Panel(Markdown(md_content), 
+                          title="📁 Related Files Added", 
+                          border_style="green"))
     
-    # Display in a panel
-    console.print(Panel(Markdown(md_content), title="📁 Related File Added", border_style="green"))
-    return md_content
+    return results
 
 class RunProgrammingTaskInput(BaseModel):
     instructions: str = Field(description="Instructions for the programming task")
@@ -50,9 +61,9 @@ def run_programming_task(input: RunProgrammingTaskInput) -> Dict[str, Union[str,
 
     The programmer can edit multiple files at once and is intelligent.
 
-    If any new files are created, remember to emit them using the emit_related_file tool once this tool completes.
+    If any new files are created, remember to emit them using the emit_related_files tool once this tool completes.
 
-    Additionally, before invoking this tool, make sure all existing related files have been emitted using the emit_related_file tool.
+    Additionally, before invoking this tool, make sure all existing related files have been emitted using the emit_related_files tool.
     
     Args:
         instructions: Instructions for the programming task
@@ -127,4 +138,4 @@ def run_programming_task(input: RunProgrammingTaskInput) -> Dict[str, Union[str,
         }
 
 # Export the functions
-__all__ = ['run_programming_task', 'emit_related_file']
+__all__ = ['run_programming_task', 'emit_related_files']

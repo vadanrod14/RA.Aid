@@ -46,7 +46,7 @@ Tools and Methodology
 Reporting Findings
 
     Use emit_research_notes to record detailed, fact-based observations about what currently exists.
-    For each significant file or directory that is part of the codebase, use emit_related_file to list it.
+    For each significant file or directory that is part of the codebase, use emit_related_files to list it.
     Your research notes should be strictly about what you have observed:
         Document files by their names and locations.
         Document discovered documentation files and their contents at a high level (e.g., "There is a README.md in the root directory that explains the folder structure").
@@ -83,7 +83,7 @@ If there is a top-level README.md or docs/ folder, always start with that.
 # Planning stage prompt - guides task breakdown and implementation planning
 # Includes a directive to scale complexity with request size.
 PLANNING_PROMPT = """Base Task:
-{base_task}
+{base_task} --keep it simple
 
 Research Notes:
 <notes>
@@ -178,7 +178,7 @@ Instructions:
 # Implementation stage prompt - guides specific task implementation
 # Added instruction to adjust complexity of implementation to match request.
 IMPLEMENTATION_PROMPT = """Base-level task (for reference only):
-{base_task}
+{base_task} --keep it simple
 
 Plan Overview:
 {plan}

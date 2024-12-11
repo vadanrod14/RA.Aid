@@ -1,5 +1,5 @@
 from .shell import run_shell_command
-from .programmer import run_programming_task, emit_related_file
+from .programmer import run_programming_task, emit_related_files
 from .expert import ask_expert, emit_expert_context
 from .read_file import read_file_tool
 from .fuzzy_find import fuzzy_find_project_files
@@ -19,7 +19,7 @@ __all__ = [
     'emit_key_facts',
     'emit_key_snippet',
     'emit_plan',
-    'emit_related_file',
+    'emit_related_files',
     'emit_research_notes',
     'emit_task',
     'fuzzy_find_project_files',
