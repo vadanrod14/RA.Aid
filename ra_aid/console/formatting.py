@@ -44,3 +44,11 @@ def print_task_header(task: str) -> None:
         task: The task text to print (supports Markdown formatting)
     """
     console.print(Panel(Markdown(task), title="🔧 Task", border_style="yellow bold"))
+
+def print_error(message: str) -> None:
+    """Print an error message in a red-bordered panel with warning emoji.
+    
+    Args:
+        message: The error message to display (supports Markdown formatting)
+    """
+    console.print(Panel(Markdown(message), title="Error", border_style="red bold"))

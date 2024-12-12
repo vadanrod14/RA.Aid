@@ -19,7 +19,7 @@ from ra_aid.tools import (
     fuzzy_find_project_files, ripgrep_search, list_directory_tree
 )
 from ra_aid.tools.memory import _global_memory, get_related_files
-from ra_aid import print_agent_output, print_stage_header, print_task_header
+from ra_aid import print_agent_output, print_stage_header, print_task_header, print_error
 from ra_aid.prompts import (
     RESEARCH_PROMPT,
     PLANNING_PROMPT,
@@ -133,7 +133,7 @@ def run_agent_with_retry(agent, prompt: str, config: dict):
             
             delay = base_delay * (2 ** attempt)  # Exponential backoff
             error_type = e.__class__.__name__
-            print(f"Encountered {error_type}: {str(e)}. Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
+            print_error(f"Encountered {error_type}: {str(e)}. Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
             time.sleep(delay)
             continue
 
@@ -254,9 +254,8 @@ def validate_environment():
         missing.append('aider binary not found in PATH. Please install aider: pip install aider')
     
     if missing:
-        print("Error: Missing required dependencies:", file=sys.stderr)
-        for error in missing:
-            print(f"- {error}", file=sys.stderr)
+        error_list = "\n".join(f"- {error}" for error in missing)
+        print_error(f"Missing required dependencies:\n\n{error_list}")
         sys.exit(1)
 
 
@@ -269,7 +268,7 @@ def main():
 
             # Validate message is provided
             if not args.message:
-                print("Error: --message is required", file=sys.stderr)
+                print_error("--message is required")
                 sys.exit(1)
                 
             base_task = args.message
