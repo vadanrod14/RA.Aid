@@ -110,6 +110,33 @@ def is_stage_requested(stage: str) -> bool:
         return len(_global_memory.get('implementation_requested', [])) > 0
     return False
 
+def run_agent_with_retry(agent, prompt: str, config: dict):
+    """Run an agent with retry logic for internal server errors.
+    
+    Args:
+        agent: The agent to run
+        prompt: The prompt to send to the agent
+        config: Configuration dictionary for the agent
+        
+    Returns:
+        None
+        
+    Raises:
+        TaskCompletedException: If the task is completed and should exit
+        Other exceptions are retried
+    """
+    while True:
+        try:
+            for chunk in agent.stream(
+                {"messages": [HumanMessage(content=prompt)]},
+                config
+            ):
+                print_agent_output(chunk)
+            break
+        except ChatAnthropic.InternalServerError as e:
+            print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
+            continue
+
 def run_implementation_stage(base_task, tasks, plan, related_files):
     """Run implementation stage with a distinct agent for each task."""
     if not is_stage_requested('implementation'):
@@ -143,17 +170,7 @@ def run_implementation_stage(base_task, tasks, plan, related_files):
         )
         
         # Run agent for this task
-        while True:
-            try:
-                for chunk in task_agent.stream(
-                    {"messages": [HumanMessage(content=task_prompt)]},
-                    {"configurable": {"thread_id": "abc123"}, "recursion_limit": 100}
-                ):
-                    print_agent_output(chunk)
-                break
-            except ChatAnthropic.InternalServerError as e:
-                print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-                continue
+        run_agent_with_retry(task_agent, task_prompt, {"configurable": {"thread_id": "abc123"}, "recursion_limit": 100})
 
 def summarize_research_findings(base_task: str, config: dict) -> None:
     """Summarize research findings for informational queries.
@@ -219,17 +236,7 @@ def run_research_subtasks(base_task: str, config: dict):
         
         # Run the subtask agent
         subtask_prompt = f"Research Subtask: {subtask}\n\n{RESEARCH_PROMPT}"
-        while True:
-            try:
-                for chunk in subtask_agent.stream(
-                    {"messages": [HumanMessage(content=subtask_prompt)]},
-                    config
-                ):
-                    print_agent_output(chunk)
-                break
-            except ChatAnthropic.InternalServerError as e:
-                print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-                continue
+        run_agent_with_retry(subtask_agent, subtask_prompt, config)
 
 def check_tech_debt_notes() -> bool:
     """Check if any tech debt notes exist.
@@ -372,6 +379,7 @@ def main():
                         title="📝 Tech Debt"
                     ))
                 return
+                
             base_task = args.message
             config = {
                 "configurable": {
@@ -394,17 +402,7 @@ def main():
 Be very thorough in your research and emit lots of snippets, key facts. If you take more than a few steps, be eager to emit research subtasks.{'' if args.research_only else ' Only request implementation if the user explicitly asked for changes to be made.'}"""
 
             try:
-                while True:
-                    try:
-                        for chunk in research_agent.stream(
-                            {"messages": [HumanMessage(content=research_prompt)]}, 
-                            config
-                        ):
-                            print_agent_output(chunk)
-                        break
-                    except ChatAnthropic.InternalServerError as e:
-                        print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-                        continue
+                run_agent_with_retry(research_agent, research_prompt, config)
             except TaskCompletedException as e:
                 print_stage_header("Task Completed")
                 raise  # Re-raise to be caught by outer handler
@@ -427,17 +425,7 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
                 )
 
                 # Run planning agent
-                while True:
-                    try:
-                        for chunk in planning_agent.stream(
-                            {"messages": [HumanMessage(content=planning_prompt)]}, 
-                            config
-                        ):
-                            print_agent_output(chunk)
-                        break
-                    except ChatAnthropic.InternalServerError as e:
-                        print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-                        continue
+                run_agent_with_retry(planning_agent, planning_prompt, config)
 
                 # Run implementation stage with task-specific agents
                 run_implementation_stage(
