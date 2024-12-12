@@ -28,6 +28,8 @@ from ra_aid.prompts import (
     SUMMARY_PROMPT
 )
 from ra_aid.exceptions import TaskCompletedException
+import time
+from anthropic import APIError, APITimeoutError, RateLimitError, InternalServerError
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -123,9 +125,12 @@ def run_agent_with_retry(agent, prompt: str, config: dict):
         
     Raises:
         TaskCompletedException: If the task is completed and should exit
-        Other exceptions are retried
+        RuntimeError: If max retries exceeded
     """
-    while True:
+    max_retries = 20
+    base_delay = 1  # Initial delay in seconds
+    
+    for attempt in range(max_retries):
         try:
             for chunk in agent.stream(
                 {"messages": [HumanMessage(content=prompt)]},
@@ -133,8 +138,14 @@ def run_agent_with_retry(agent, prompt: str, config: dict):
             ):
                 print_agent_output(chunk)
             break
-        except ChatAnthropic.InternalServerError as e:
-            print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
+        except (InternalServerError, APITimeoutError, RateLimitError, APIError) as e:
+            if attempt == max_retries - 1:
+                raise RuntimeError(f"Max retries ({max_retries}) exceeded. Last error: {str(e)}")
+            
+            delay = base_delay * (2 ** attempt)  # Exponential backoff
+            error_type = e.__class__.__name__
+            print(f"Encountered {error_type}: {str(e)}. Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
+            time.sleep(delay)
             continue
 
 def run_implementation_stage(base_task, tasks, plan, related_files):
