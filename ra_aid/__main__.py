@@ -19,9 +19,8 @@ from ra_aid.tools import (
     fuzzy_find_project_files, ripgrep_search, list_directory_tree
 )
 from ra_aid.tools.note_tech_debt import BORDER_STYLE, TECH_DEBT_NOTE_EMOJI
-from ra_aid.tools.memory import _global_memory
+from ra_aid.tools.memory import _global_memory, get_related_files
 from ra_aid import print_agent_output, print_stage_header, print_task_header
-from ra_aid.tools.programmer import related_files
 from ra_aid.prompts import (
     RESEARCH_PROMPT,
     PLANNING_PROMPT,
@@ -424,7 +423,7 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
                     key_facts=get_memory_value('key_facts'),
                     key_snippets=get_memory_value('key_snippets'),
                     base_task=base_task,
-                    related_files="\n".join(related_files)
+                    related_files="\n".join(get_related_files())
                 )
 
                 # Run planning agent
@@ -445,7 +444,7 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
                     base_task,
                     get_memory_value('tasks'),
                     get_memory_value('plan'),
-                    related_files
+                    get_related_files()
                 )
         except TaskCompletedException:
             sys.exit(0)

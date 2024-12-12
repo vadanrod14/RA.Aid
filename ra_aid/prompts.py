@@ -26,6 +26,7 @@ You must:
     Describe what exists in these files (file names, directory structures, documentation found, code patterns, dependencies).
     Do so by incrementally and systematically exploring the filesystem with careful directory listing tool calls.
     You can use fuzzy file search to quickly find relevant files matching a search pattern.
+    Use ripgrep_search extensively to do *exhaustive* searches for all references to anything that might be changed as part of the base level task.
 
 You must not:
 

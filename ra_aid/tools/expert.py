@@ -1,9 +1,11 @@
+from typing import List
+import os
 from langchain_core.tools import tool
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 from langchain_openai import ChatOpenAI
-from .memory import get_memory_value
+from .memory import get_memory_value, get_related_files
 
 console = Console()
 model = ChatOpenAI(model_name="o1-preview")
@@ -39,6 +41,61 @@ def emit_expert_context(context: str) -> str:
     
     return f"Context added."
 
+def read_files_with_limit(file_paths: List[str], max_lines: int = 10000) -> str:
+    """Read multiple files and concatenate contents, stopping at line limit.
+    
+    Args:
+        file_paths: List of file paths to read
+        max_lines: Maximum total lines to read (default: 10000)
+        
+    Returns:
+        String containing concatenated file contents with headers
+        
+    Note:
+        - Each file's contents will be prefaced with its path as a header
+        - Stops reading files when max_lines limit is reached
+        - Files that would exceed the line limit are truncated
+    """
+    total_lines = 0
+    contents = []
+    
+    for path in file_paths:
+        try:
+            if not os.path.exists(path):
+                console.print(f"Warning: File not found: {path}", style="yellow")
+                continue
+                
+            with open(path, 'r', encoding='utf-8') as f:
+                file_content = []
+                for i, line in enumerate(f):
+                    if total_lines + i >= max_lines:
+                        file_content.append(f"\n... truncated after {max_lines} lines ...")
+                        break
+                    file_content.append(line)
+                
+                if file_content:
+                    contents.append(f'\n## File: {path}\n')
+                    contents.append(''.join(file_content))
+                    total_lines += len(file_content)
+            
+        except Exception as e:
+            console.print(f"Error reading file {path}: {str(e)}", style="red")
+            continue
+            
+    return ''.join(contents)
+
+def read_related_files() -> str:
+    """Read related files from memory.
+    
+    Returns:
+        String containing concatenated file contents with headers
+    """
+    related_files = get_related_files()
+    if not related_files:
+        return ''
+    
+    return read_files_with_limit(list(related_files), max_lines=10000)
+
 @tool("ask_expert")
 def ask_expert(question: str) -> str:
     """Ask a question to an expert AI model.
@@ -65,6 +122,11 @@ def ask_expert(question: str) -> str:
     
     # Build query with context and key facts
     query_parts = []
+    
+    # Add related file contents if any exist first
+    related_contents = read_related_files()
+    if related_contents:
+        query_parts.extend(['# Related Files', related_contents])
     
     # Add key facts if they exist
     key_facts = get_memory_value('key_facts')
@@ -98,7 +160,7 @@ def ask_expert(question: str) -> str:
         border_style="yellow"
     ))
     
-    # Clear context after use
+    # Clear context after use (only after successful panel display)
     expert_context.clear()
     
     # Get response
