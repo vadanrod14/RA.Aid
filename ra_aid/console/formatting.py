@@ -31,7 +31,7 @@ def print_stage_header(stage: str) -> None:
     icon = icons.get(stage_key, '🚀')
     
     # Create styled rule with icon
-    rule_content = f"{icon} {stage_title} {icon}"
+    rule_content = f"{icon} {stage_title}"
     console.print()
     console.print(Rule(rule_content, style="green bold"))
     console.print()
