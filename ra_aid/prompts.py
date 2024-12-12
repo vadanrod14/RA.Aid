@@ -93,18 +93,6 @@ Thoroughness and Completeness
         Carefully report what you found, including all directories and files.
     Do not move on until you are certain you have a complete picture of the codebase structure.
 
-Technical Debt Detection:
-    While exploring the codebase, use note_tech_debt to record any technical issues you discover, such as:
-        - Inconsistencies in code organization or naming
-        - Apparent dead or duplicated code
-        - Out-of-date dependencies or documentation
-        - Anti-patterns or code smells
-        - Confusing or poorly documented sections
-    When calling note_tech_debt, include:
-        - Clear description of the issue
-        - Specific file location where the issue was found
-    Focus on observation only - do not suggest fixes
-
 Decision on Implementation
 
     After completing your factual enumeration and description, decide:
@@ -155,15 +143,6 @@ Guidelines:
         Individual tasks can include multiple steps, file edits, etc.
           Therefore, use as few tasks as needed, but no fewer.
           Keep tasks organized as semantic divisions of the overall work, rather than a series of steps.
-
-    Technical Debt Management:
-        While analyzing implementation approaches, use note_tech_debt to record discovered issues:
-            - Architectural inconsistencies that need future attention 
-            - Technical limitations that may need addressing
-            - Dependencies that could cause future problems
-            - Potential scalability or maintenance concerns
-            - API design issues or inconsistencies
-        This helps maintain a record of technical concerns while staying focused on the current task.
 
     When planning the implementation:
         Break the overall work into sub-tasks that are as detailed as necessary, but no more.
@@ -243,14 +222,6 @@ Important Notes:
 - Use delete_key_facts to remove facts that become outdated, irrelevant, or duplicated.
 - Use emit_key_snippets to manage code sections before and after modifications in batches.
 - Regularly remove outdated snippets with delete_key_snippets.
-- While implementing, use note_tech_debt to record technical issues you encounter:
-    * Code organization problems requiring refactoring
-    * Areas needing better error handling or validation
-    * Performance concerns that should be addressed
-    * Security considerations for future hardening
-    * Testing gaps or coverage issues
-  Record these observations without deviating from your current task.
-
 Instructions:
 1. Review the provided base task, plan, and key facts.
 2. Implement only the specified task:

@@ -14,11 +14,10 @@ from ra_aid.tools import (
     ask_expert, run_shell_command, run_programming_task,
     emit_research_notes, emit_plan, emit_related_files, emit_task,
     emit_expert_context, get_memory_value, emit_key_facts, delete_key_facts,
-    emit_key_snippets, delete_key_snippets, note_tech_debt,
+    emit_key_snippets, delete_key_snippets,
     request_implementation, read_file_tool, emit_research_subtask,
     fuzzy_find_project_files, ripgrep_search, list_directory_tree
 )
-from ra_aid.tools.note_tech_debt import BORDER_STYLE, TECH_DEBT_NOTE_EMOJI
 from ra_aid.tools.memory import _global_memory, get_related_files
 from ra_aid import print_agent_output, print_stage_header, print_task_header
 from ra_aid.prompts import (
@@ -56,16 +55,6 @@ Examples:
         action='store_true',
         help='Skip interactive approval for shell commands'
     )
-    parser.add_argument(
-        '--review-tech-debt',
-        action='store_true',
-        help='Review existing technical debt notes'
-    )
-    parser.add_argument(
-        '--clear-tech-debt',
-        action='store_true',
-        help='Clear all technical debt notes'
-    )
     return parser.parse_args()
 
 # Create console instance
@@ -80,9 +69,9 @@ planning_memory = MemorySaver()
 implementation_memory = MemorySaver()
 
 # Define tool sets for each stage
-research_tools = [list_directory_tree, emit_research_subtask, run_shell_command, emit_expert_context, ask_expert, emit_research_notes, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, note_tech_debt, request_implementation, read_file_tool, fuzzy_find_project_files, ripgrep_search]
-planning_tools = [list_directory_tree, emit_expert_context, ask_expert, emit_plan, emit_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, note_tech_debt, read_file_tool, fuzzy_find_project_files, ripgrep_search]
-implementation_tools = [list_directory_tree, run_shell_command, emit_expert_context, ask_expert, run_programming_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, note_tech_debt, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+research_tools = [list_directory_tree, emit_research_subtask, run_shell_command, emit_expert_context, ask_expert, emit_research_notes, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, request_implementation, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+planning_tools = [list_directory_tree, emit_expert_context, ask_expert, emit_plan, emit_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
+implementation_tools = [list_directory_tree, run_shell_command, emit_expert_context, ask_expert, run_programming_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
 
 # Create stage-specific agents with individual memory objects
 research_agent = create_react_agent(model, research_tools, checkpointer=research_memory)
@@ -249,22 +238,6 @@ def run_research_subtasks(base_task: str, config: dict):
         subtask_prompt = f"Research Subtask: {subtask}\n\n{RESEARCH_PROMPT}"
         run_agent_with_retry(subtask_agent, subtask_prompt, config)
 
-def check_tech_debt_notes() -> bool:
-    """Check if any tech debt notes exist.
-    
-    Returns:
-        bool: True if tech debt notes exist, False otherwise
-    """
-    tech_debt_dir = '.ra-aid/tech-debt'
-    tech_debt_files = glob.glob(os.path.join(tech_debt_dir, '*.md'))
-    return len(tech_debt_files) > 0
-
-def clear_tech_debt_notes() -> None:
-    """Clear all technical debt notes."""
-    tech_debt_dir = '.ra-aid/tech-debt'
-    if os.path.exists(tech_debt_dir):
-        shutil.rmtree(tech_debt_dir)
-        os.makedirs(tech_debt_dir)  # Recreate empty directory
 
 def validate_environment():
     """Validate required environment variables and dependencies."""
@@ -286,76 +259,6 @@ def validate_environment():
             print(f"- {error}", file=sys.stderr)
         sys.exit(1)
 
-def review_tech_debt() -> None:
-    """Review any technical debt notes collected during execution."""
-    tech_debt_dir = '.ra-aid/tech-debt'
-    tech_debt_files = glob.glob(os.path.join(tech_debt_dir, '*.md'))
-
-    if not tech_debt_files:
-        console.print(Panel(
-            "[bold]No technical debt notes found.[/]",
-            border_style=BORDER_STYLE,
-            title=f"{TECH_DEBT_NOTE_EMOJI} Tech Debt"
-        ))
-        return
-
-    print_stage_header("Technical Debt Review")
-    
-    # Read the contents of all tech debt notes
-    tech_debt_contents = []
-    for file_path in tech_debt_files:
-        with open(file_path, 'r') as file:
-            content = file.read()
-            tech_debt_contents.append("\n")
-            tech_debt_contents.append(content)
-
-    # Create dedicated memory and agent for tech debt review
-    tech_debt_memory = MemorySaver()
-    
-    # Define tools for tech debt review agent - minimal set needed for analysis
-    # tech_debt_tools = [
-    #     emit_expert_context, ask_expert, read_file_tool,
-    #     list_directory_tree, fuzzy_find_project_files, ripgrep_search,
-    # ]
-    tech_debt_tools = []
-    
-    # Create fresh agent for tech debt review
-    tech_debt_agent = create_react_agent(
-        model,
-        tech_debt_tools,
-        checkpointer=tech_debt_memory
-    )
-
-    # Analyze the tech debt notes
-    prompt = f"""Review the following technical debt notes collected during program execution:
-
-{chr(10).join(tech_debt_contents)}
-
-Please provide a brief, focused analysis:
-1. Group similar issues if any
-2. Highlight high-impact items
-3. Suggest a rough priority order
-Keep the response concise and actionable.
-
-Remember that the user doesn't know the note ids. You'll have to reiterate the key information of the issues in whole.
-
-We want to prioritize items that are the highest impact relative to the level of effort required to fix them.
-"""
-    # Stream and print the analysis
-    while True:
-        try:
-            for chunk in tech_debt_agent.stream(
-                {"messages": [HumanMessage(content=prompt)]},
-                {"configurable": {"thread_id": "tech-debt"}, "recursion_limit": 100}
-            ):
-                print_agent_output(chunk)
-            break
-        except ChatAnthropic.InternalServerError as e:
-            print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-            continue
-
-    # Exit immediately after tech debt review
-    sys.exit(0)
 
 def main():
     """Main entry point for the ra-aid command line tool."""
@@ -364,32 +267,10 @@ def main():
             validate_environment()
             args = parse_arguments()
 
-            # Validate message is provided when needed
-            if not (args.message or args.review_tech_debt or args.clear_tech_debt):
-                print("Error: --message is required unless reviewing or clearing tech debt", file=sys.stderr)
+            # Validate message is provided
+            if not args.message:
+                print("Error: --message is required", file=sys.stderr)
                 sys.exit(1)
-
-            # Handle clear tech debt request early
-            if args.clear_tech_debt:
-                clear_tech_debt_notes()
-                console.print(Panel(
-                    "[bold]Technical debt notes cleared.[/]",
-                    border_style="bright_blue",
-                    title="📝 Tech Debt"
-                ))
-                return
-                
-            # Handle tech debt review request
-            if args.review_tech_debt:
-                if check_tech_debt_notes():
-                    review_tech_debt()
-                else:
-                    console.print(Panel(
-                        "[bold]No technical debt notes found.[/]",
-                        border_style="bright_blue",
-                        title="📝 Tech Debt"
-                    ))
-                return
                 
             base_task = args.message
             config = {
@@ -448,15 +329,7 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
         except TaskCompletedException:
             sys.exit(0)
     finally:
-        # Show tech debt notification only when appropriate
-        if (check_tech_debt_notes() and 
-            not getattr(args, 'review_tech_debt', False) and 
-            not getattr(args, 'clear_tech_debt', False)):
-            console.print(Panel(
-                "[bold]Technical debt notes exist.[/]\n[dim italic]Use --review-tech-debt to review them.[/]",
-                border_style=BORDER_STYLE,
-                title=f"{TECH_DEBT_NOTE_EMOJI} Tech Debt"
-            ))
+        pass
 
 if __name__ == "__main__":
     main()
