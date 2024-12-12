@@ -6,6 +6,11 @@ from langchain_core.tools import tool
 from rich.console import Console
 from rich.panel import Panel
 
+# Rich styling constants for tech debt UI
+BORDER_STYLE = "bright_blue"
+TECH_DEBT_NOTE_EMOJI = "📝"
+TECH_DEBT_CLEANUP_EMOJI = "🧹"
+
 MAX_NOTES = 10  # Maximum number of tech debt notes before cleanup warning
 
 console = Console()
@@ -60,8 +65,8 @@ def note_tech_debt(
 
 [dim italic]The cleanup agent will analyze note contents and suggest which ones to purge.[/dim italic]
 """,
-                    title="🧹 Tech Debt Cleanup",
-                    border_style="bright_blue"
+                    title=f"{TECH_DEBT_CLEANUP_EMOJI} Tech Debt Cleanup",
+                    border_style=BORDER_STYLE
                 )
             )
     
@@ -83,8 +88,8 @@ def note_tech_debt(
     console.print(
         Panel(
             f"Created Tech Debt Note #{next_num} at {note_path}",
-            title="📝 Tech Debt Note",
-            border_style="bright_blue"
+            title=f"{TECH_DEBT_NOTE_EMOJI} Tech Debt Note",
+            border_style=BORDER_STYLE
         )
     )
     

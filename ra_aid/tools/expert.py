@@ -21,6 +21,8 @@ def emit_expert_context(context: str) -> str:
 
     Err on the side of adding more context rather than less.
 
+    You must give the complete contents.
+
     Expert context will be reset after the ask_expert tool is called.
     
     Args:
@@ -29,9 +31,13 @@ def emit_expert_context(context: str) -> str:
     Returns:
         Confirmation message
     """
-    global expert_context
     expert_context.append(context)
-    return f"Added context: {context}"
+    
+    # Create and display status panel
+    panel_content = f"Added expert context ({len(context)} characters)"
+    console.print(Panel(panel_content, title="Expert Context", border_style="blue"))
+    
+    return f"Context added."
 
 @tool("ask_expert")
 def ask_expert(question: str) -> str:

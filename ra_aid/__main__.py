@@ -4,6 +4,8 @@ import glob
 import os
 import sys
 import shutil
+from rich.panel import Panel
+from rich.console import Console
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
@@ -16,6 +18,7 @@ from ra_aid.tools import (
     request_implementation, read_file_tool, emit_research_subtask,
     fuzzy_find_project_files, ripgrep_search, list_directory_tree
 )
+from ra_aid.tools.note_tech_debt import BORDER_STYLE, TECH_DEBT_NOTE_EMOJI
 from ra_aid.tools.memory import _global_memory
 from ra_aid import print_agent_output, print_stage_header, print_task_header
 from ra_aid.tools.programmer import related_files
@@ -40,7 +43,6 @@ Examples:
     parser.add_argument(
         '-m', '--message',
         type=str,
-        required=True,
         help='The task or query to be executed by the agent'
     )
     parser.add_argument(
@@ -53,7 +55,20 @@ Examples:
         action='store_true',
         help='Skip interactive approval for shell commands'
     )
+    parser.add_argument(
+        '--review-tech-debt',
+        action='store_true',
+        help='Review existing technical debt notes'
+    )
+    parser.add_argument(
+        '--clear-tech-debt',
+        action='store_true',
+        help='Clear all technical debt notes'
+    )
     return parser.parse_args()
+
+# Create console instance
+console = Console()
 
 # Create the base model
 model = ChatAnthropic(model_name="claude-3-5-sonnet-20241022")
@@ -217,6 +232,23 @@ def run_research_subtasks(base_task: str, config: dict):
                 print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
                 continue
 
+def check_tech_debt_notes() -> bool:
+    """Check if any tech debt notes exist.
+    
+    Returns:
+        bool: True if tech debt notes exist, False otherwise
+    """
+    tech_debt_dir = '.ra-aid/tech-debt'
+    tech_debt_files = glob.glob(os.path.join(tech_debt_dir, '*.md'))
+    return len(tech_debt_files) > 0
+
+def clear_tech_debt_notes() -> None:
+    """Clear all technical debt notes."""
+    tech_debt_dir = '.ra-aid/tech-debt'
+    if os.path.exists(tech_debt_dir):
+        shutil.rmtree(tech_debt_dir)
+        os.makedirs(tech_debt_dir)  # Recreate empty directory
+
 def validate_environment():
     """Validate required environment variables and dependencies."""
     missing = []
@@ -237,12 +269,17 @@ def validate_environment():
             print(f"- {error}", file=sys.stderr)
         sys.exit(1)
 
-def review_tech_debt(model) -> None:
+def review_tech_debt() -> None:
     """Review any technical debt notes collected during execution."""
     tech_debt_dir = '.ra-aid/tech-debt'
     tech_debt_files = glob.glob(os.path.join(tech_debt_dir, '*.md'))
 
     if not tech_debt_files:
+        console.print(Panel(
+            "[bold]No technical debt notes found.[/]",
+            border_style=BORDER_STYLE,
+            title=f"{TECH_DEBT_NOTE_EMOJI} Tech Debt"
+        ))
         return
 
     print_stage_header("Technical Debt Review")
@@ -252,7 +289,25 @@ def review_tech_debt(model) -> None:
     for file_path in tech_debt_files:
         with open(file_path, 'r') as file:
             content = file.read()
+            tech_debt_contents.append("\n")
             tech_debt_contents.append(content)
+
+    # Create dedicated memory and agent for tech debt review
+    tech_debt_memory = MemorySaver()
+    
+    # Define tools for tech debt review agent - minimal set needed for analysis
+    # tech_debt_tools = [
+    #     emit_expert_context, ask_expert, read_file_tool,
+    #     list_directory_tree, fuzzy_find_project_files, ripgrep_search,
+    # ]
+    tech_debt_tools = []
+    
+    # Create fresh agent for tech debt review
+    tech_debt_agent = create_react_agent(
+        model,
+        tech_debt_tools,
+        checkpointer=tech_debt_memory
+    )
 
     # Analyze the tech debt notes
     prompt = f"""Review the following technical debt notes collected during program execution:
@@ -264,102 +319,146 @@ Please provide a brief, focused analysis:
 2. Highlight high-impact items
 3. Suggest a rough priority order
 Keep the response concise and actionable.
+
+Remember that the user doesn't know the note ids. You'll have to reiterate the key information of the issues in whole.
+
+We want to prioritize items that are the highest impact relative to the level of effort required to fix them.
 """
-    # Stream the analysis
+    # Stream and print the analysis
     while True:
         try:
-            for chunk in model.stream(
+            for chunk in tech_debt_agent.stream(
                 {"messages": [HumanMessage(content=prompt)]},
                 {"configurable": {"thread_id": "tech-debt"}, "recursion_limit": 100}
             ):
-                print_agent_output(chunk) 
+                print_agent_output(chunk)
             break
         except ChatAnthropic.InternalServerError as e:
             print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
             continue
 
+    # Exit immediately after tech debt review
+    sys.exit(0)
+
 def main():
     """Main entry point for the ra-aid command line tool."""
     try:
-        validate_environment()
-        args = parse_arguments()
-        base_task = args.message
-        config = {
-            "configurable": {
-                "thread_id": "abc123"
-            },
-            "recursion_limit": 100,
-            "research_only": args.research_only,
-            "cowboy_mode": args.cowboy_mode
-        }
-        
-        # Store config in global memory for access by is_informational_query
-        _global_memory['config'] = config
+        try:
+            validate_environment()
+            args = parse_arguments()
 
-        # Run research stage
-        print_stage_header("Research Stage")
-        research_prompt = f"""User query: {base_task} --keep it simple
+            # Validate message is provided when needed
+            if not (args.message or args.review_tech_debt or args.clear_tech_debt):
+                print("Error: --message is required unless reviewing or clearing tech debt", file=sys.stderr)
+                sys.exit(1)
+
+            # Handle clear tech debt request early
+            if args.clear_tech_debt:
+                clear_tech_debt_notes()
+                console.print(Panel(
+                    "[bold]Technical debt notes cleared.[/]",
+                    border_style="bright_blue",
+                    title="📝 Tech Debt"
+                ))
+                return
+                
+            # Handle tech debt review request
+            if args.review_tech_debt:
+                if check_tech_debt_notes():
+                    review_tech_debt()
+                else:
+                    console.print(Panel(
+                        "[bold]No technical debt notes found.[/]",
+                        border_style="bright_blue",
+                        title="📝 Tech Debt"
+                    ))
+                return
+            base_task = args.message
+            config = {
+                "configurable": {
+                    "thread_id": "abc123"
+                },
+                "recursion_limit": 100,
+                "research_only": args.research_only,
+                "cowboy_mode": args.cowboy_mode
+            }
+            
+            # Store config in global memory for access by is_informational_query
+            _global_memory['config'] = config
+
+            # Run research stage
+            print_stage_header("Research Stage")
+            research_prompt = f"""User query: {base_task} --keep it simple
 
 {RESEARCH_PROMPT}
 
 Be very thorough in your research and emit lots of snippets, key facts. If you take more than a few steps, be eager to emit research subtasks.{'' if args.research_only else ' Only request implementation if the user explicitly asked for changes to be made.'}"""
 
-        try:
-            while True:
-                try:
-                    for chunk in research_agent.stream(
-                        {"messages": [HumanMessage(content=research_prompt)]}, 
-                        config
-                    ):
-                        print_agent_output(chunk)
-                    break
-                except ChatAnthropic.InternalServerError as e:
-                    print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-                    continue
-        except TaskCompletedException as e:
-            print_stage_header("Task Completed")
-            raise  # Re-raise to be caught by outer handler
+            try:
+                while True:
+                    try:
+                        for chunk in research_agent.stream(
+                            {"messages": [HumanMessage(content=research_prompt)]}, 
+                            config
+                        ):
+                            print_agent_output(chunk)
+                        break
+                    except ChatAnthropic.InternalServerError as e:
+                        print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
+                        continue
+            except TaskCompletedException as e:
+                print_stage_header("Task Completed")
+                raise  # Re-raise to be caught by outer handler
 
-        # Run any research subtasks
-        run_research_subtasks(base_task, config)
-        
-        # For informational queries, summarize findings
-        if is_informational_query():
-            summarize_research_findings(base_task, config)
-        else:
-            # Only proceed with planning and implementation if not an informational query
-            print_stage_header("Planning Stage")
-            planning_prompt = PLANNING_PROMPT.format(
-                research_notes=get_memory_value('research_notes'),
-                key_facts=get_memory_value('key_facts'),
-                key_snippets=get_memory_value('key_snippets'),
-                base_task=base_task,
-                related_files="\n".join(related_files)
-            )
+            # Run any research subtasks
+            run_research_subtasks(base_task, config)
+            
+            # For informational queries, summarize findings
+            if is_informational_query():
+                summarize_research_findings(base_task, config)
+            else:
+                # Only proceed with planning and implementation if not an informational query
+                print_stage_header("Planning Stage")
+                planning_prompt = PLANNING_PROMPT.format(
+                    research_notes=get_memory_value('research_notes'),
+                    key_facts=get_memory_value('key_facts'),
+                    key_snippets=get_memory_value('key_snippets'),
+                    base_task=base_task,
+                    related_files="\n".join(related_files)
+                )
 
-            # Run planning agent
-            while True:
-                try:
-                    for chunk in planning_agent.stream(
-                        {"messages": [HumanMessage(content=planning_prompt)]}, 
-                        config
-                    ):
-                        print_agent_output(chunk)
-                    break
-                except ChatAnthropic.InternalServerError as e:
-                    print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-                    continue
+                # Run planning agent
+                while True:
+                    try:
+                        for chunk in planning_agent.stream(
+                            {"messages": [HumanMessage(content=planning_prompt)]}, 
+                            config
+                        ):
+                            print_agent_output(chunk)
+                        break
+                    except ChatAnthropic.InternalServerError as e:
+                        print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
+                        continue
 
-            # Run implementation stage with task-specific agents
-            run_implementation_stage(
-                base_task,
-                get_memory_value('tasks'),
-                get_memory_value('plan'),
-                related_files
-            )
-    except TaskCompletedException:
-        review_tech_debt(model)
-        sys.exit(0)
+                # Run implementation stage with task-specific agents
+                run_implementation_stage(
+                    base_task,
+                    get_memory_value('tasks'),
+                    get_memory_value('plan'),
+                    related_files
+                )
+        except TaskCompletedException:
+            sys.exit(0)
+    finally:
+        # Show tech debt notification only when appropriate
+        if (check_tech_debt_notes() and 
+            not getattr(args, 'review_tech_debt', False) and 
+            not getattr(args, 'clear_tech_debt', False)):
+            console.print(Panel(
+                "[bold]Technical debt notes exist.[/]\n[dim italic]Use --review-tech-debt to review them.[/]",
+                border_style=BORDER_STYLE,
+                title=f"{TECH_DEBT_NOTE_EMOJI} Tech Debt"
+            ))
 
 if __name__ == "__main__":
     main()
