@@ -123,11 +123,6 @@ def ask_expert(question: str) -> str:
     # Build query with context and key facts
     query_parts = []
     
-    # Add related file contents if any exist first
-    related_contents = read_related_files()
-    if related_contents:
-        query_parts.extend(['# Related Files', related_contents])
-    
     # Add key facts if they exist
     key_facts = get_memory_value('key_facts')
     if key_facts and len(key_facts) > 0:
@@ -145,7 +140,7 @@ def ask_expert(question: str) -> str:
         query_parts.append("\n# Additional Context")
         query_parts.append("\n".join(expert_context))
     
-    # Add the question last
+    # Add the question
     if query_parts:  # If we have context/facts, add a newline before question
         query_parts.append("\n# Question")
     query_parts.append(question)
@@ -163,6 +158,15 @@ def ask_expert(question: str) -> str:
     # Clear context after use (only after successful panel display)
     expert_context.clear()
     
+    # Get related file contents and rebuild query with it at the start
+    related_contents = read_related_files()
+    if related_contents:
+        # Create new query_parts with related files at the start
+        new_query_parts = ['# Related Files', related_contents]
+        new_query_parts.extend(query_parts)
+        query_parts = new_query_parts
+        query = "\n".join(query_parts)
+        
     # Get response
     response = model.invoke(query)
     
