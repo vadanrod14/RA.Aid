@@ -6,7 +6,9 @@ from ra_aid.tools.memory import (
     emit_key_facts,
     delete_key_facts,
     emit_key_snippets,
-    delete_key_snippets
+    delete_key_snippets,
+    emit_related_files,
+    get_related_files
 )
 
 @pytest.fixture
@@ -20,6 +22,7 @@ def reset_memory():
     _global_memory['plans'] = []
     _global_memory['tasks'] = []
     _global_memory['research_subtasks'] = []
+    _global_memory['related_files'] = set()
     yield
     # Clean up after test
     _global_memory['key_facts'] = {}
@@ -206,6 +209,35 @@ def test_delete_key_snippets_empty(reset_memory):
     
     # Verify snippet still exists
     assert 0 in _global_memory['key_snippets']
+
+def test_emit_related_files_basic(reset_memory):
+    """Test basic adding of files"""
+    # Test adding single file
+    result = emit_related_files.invoke({"files": ["test.py"]})
+    assert result == "Files noted."
+    assert get_related_files() == {"test.py"}
+    
+    # Test adding multiple files
+    result = emit_related_files.invoke({"files": ["main.py", "utils.py"]})
+    assert result == "Files noted."
+    assert get_related_files() == {"test.py", "main.py", "utils.py"}
+
+def test_get_related_files_empty(reset_memory):
+    """Test getting related files when none added"""
+    assert get_related_files() == set()
+
+def test_emit_related_files_duplicates(reset_memory):
+    """Test that duplicate files are handled correctly"""
+    # Add initial files
+    result = emit_related_files.invoke({"files": ["test.py", "main.py"]})
+    assert result == "Files noted."
+    assert get_related_files() == {"test.py", "main.py"}
+    
+    # Try adding duplicates
+    result = emit_related_files.invoke({"files": ["test.py", "main.py", "test.py"]})
+    assert result == "Files noted."
+    # Set should still only contain unique entries
+    assert get_related_files() == {"test.py", "main.py"}
 
 def test_key_snippets_integration(reset_memory):
     """Integration test for key snippets functionality"""

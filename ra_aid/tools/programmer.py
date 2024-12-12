@@ -8,46 +8,10 @@ from rich.markdown import Markdown
 from rich.text import Text
 from ra_aid.proc.interactive import run_interactive_command
 from pydantic import BaseModel, Field
-from .memory import get_memory_value
 from ra_aid.text.processing import truncate_output
 
 console = Console()
 
-# Keep track of related files globally
-related_files: List[str] = []
-related_files_set: Set[str] = set()
-
-@tool("emit_related_files")
-def emit_related_files(files: List[str]) -> List[str]:
-    """Store multiple related files that the programmer tool should work with.
-    
-    Args:
-        files: List of file paths to add
-        
-    Returns:
-        List of confirmation messages for added files
-    """
-    global related_files, related_files_set
-    results = []
-    added_files = []
-    
-    # Process unique files
-    for file in set(files):  # Remove duplicates in input
-        if file not in related_files_set:
-            related_files.append(file)
-            related_files_set.add(file)
-            added_files.append(file)
-            results.append(f"Added related file: {file}")
-    
-    # Rich output - single consolidated panel
-    if added_files:
-        files_added_md = '\n'.join(f"- `{file}`" for file in added_files)
-        md_content = f"**Files Noted:**\n{files_added_md}"
-        console.print(Panel(Markdown(md_content), 
-                          title="📁 Related Files Noted", 
-                          border_style="green"))
-    
-    return results
 
 class RunProgrammingTaskInput(BaseModel):
     instructions: str = Field(description="Instructions for the programming task")
@@ -88,13 +52,8 @@ def run_programming_task(input: RunProgrammingTaskInput) -> Dict[str, Union[str,
     
     command.append(input.instructions)
     
-    # Use both input files and related files
-    files_to_use = set(related_files)  # Start with related files
-    if input.files:  # Add any additional input files
-        files_to_use.update(input.files)
-    
-    if files_to_use:
-        command.extend(list(files_to_use))
+    if input.files:
+        command.extend(input.files)
         
     # Create a pretty display of what we're doing
     task_display = [
@@ -102,10 +61,10 @@ def run_programming_task(input: RunProgrammingTaskInput) -> Dict[str, Union[str,
         f"{input.instructions}\n"
     ]
     
-    if files_to_use:
+    if input.files:
         task_display.extend([
             "\n## Files\n",
-            *[f"- `{file}`\n" for file in files_to_use]
+            *[f"- `{file}`\n" for file in input.files]
         ])
     
     markdown_content = "".join(task_display)
@@ -138,4 +97,4 @@ def run_programming_task(input: RunProgrammingTaskInput) -> Dict[str, Union[str,
         }
 
 # Export the functions
-__all__ = ['run_programming_task', 'emit_related_files']
+__all__ = ['run_programming_task']

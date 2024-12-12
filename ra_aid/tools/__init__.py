@@ -1,5 +1,5 @@
 from .shell import run_shell_command
-from .programmer import run_programming_task, emit_related_files
+from .programmer import run_programming_task
 from .expert import ask_expert, emit_expert_context
 from .read_file import read_file_tool
 from .fuzzy_find import fuzzy_find_project_files
@@ -9,7 +9,7 @@ from .note_tech_debt import note_tech_debt
 from .memory import (
     emit_research_notes, emit_plan, emit_task, get_memory_value, emit_key_facts,
     request_implementation, skip_implementation, delete_key_facts, emit_research_subtask,
-    emit_key_snippets, delete_key_snippets
+    emit_key_snippets, delete_key_snippets, emit_related_files
 )
 
 __all__ = [
@@ -20,7 +20,7 @@ __all__ = [
     'emit_key_facts',
     'emit_key_snippets',
     'emit_plan',
-    'emit_related_files',
+    'emit_related_files', 
     'emit_research_notes',
     'emit_task',
     'fuzzy_find_project_files',
@@ -32,7 +32,6 @@ __all__ = [
     'run_shell_command',
     'skip_implementation',
     'emit_research_subtask',
-    'fuzzy_find_project_files',
     'ripgrep_search',
     'note_tech_debt'
 ]

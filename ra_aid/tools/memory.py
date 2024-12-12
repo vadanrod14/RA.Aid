@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Union, TypedDict, Optional, Sequence
+from typing import Dict, List, Any, Union, TypedDict, Optional, Sequence, Set
 from ra_aid.exceptions import TaskCompletedException
 from rich.console import Console
 from rich.markdown import Markdown
@@ -15,7 +15,7 @@ class SnippetInfo(TypedDict):
 console = Console()
 
 # Global memory store
-_global_memory: Dict[str, Union[List[Any], Dict[int, str], Dict[int, SnippetInfo], int]] = {
+_global_memory: Dict[str, Union[List[Any], Dict[int, str], Dict[int, SnippetInfo], int, Set[str]]] = {
     'research_notes': [],
     'plans': [],
     'tasks': [],
@@ -25,7 +25,8 @@ _global_memory: Dict[str, Union[List[Any], Dict[int, str], Dict[int, SnippetInfo
     'key_snippets': {},  # Dict[int, SnippetInfo] - ID to snippet mapping
     'key_snippet_id_counter': 0,  # Counter for generating unique snippet IDs
     'implementation_requested': [],
-    'implementation_skipped': []
+    'implementation_skipped': [],
+    'related_files': set()
 }
 
 @tool("emit_research_notes")
@@ -258,6 +259,44 @@ def one_shot_completed(message: str) -> str:
     if len(_global_memory['implementation_requested']) > 0:
         raise ValueError("Cannot complete in one shot - implementation was requested")
     raise TaskCompletedException(message)
+
+def get_related_files() -> Set[str]:
+    """Get the current set of related files.
+    
+    Returns:
+        Set of file paths that have been marked as related
+    """
+    return _global_memory['related_files']
+
+@tool("emit_related_files")
+def emit_related_files(files: List[str]) -> str:
+    """Store multiple related files that tools should work with.
+    
+    Args:
+        files: List of file paths to add
+        
+    Returns:
+        Confirmation message
+    """
+    results = []
+    added_files = []
+    
+    # Process unique files
+    for file in set(files):  # Remove duplicates in input
+        if file not in _global_memory['related_files']:
+            _global_memory['related_files'].add(file)
+            added_files.append(file)
+            results.append(f"Added related file: {file}")
+    
+    # Rich output - single consolidated panel
+    if added_files:
+        files_added_md = '\n'.join(f"- `{file}`" for file in added_files)
+        md_content = f"**Files Noted:**\n{files_added_md}"
+        console.print(Panel(Markdown(md_content), 
+                          title="📁 Related Files Noted", 
+                          border_style="green"))
+    
+    return "Files noted."
 
 def get_memory_value(key: str) -> str:
     """Get a value from global memory.
