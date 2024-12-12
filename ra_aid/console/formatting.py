@@ -19,7 +19,6 @@ def print_stage_header(stage: str) -> None:
         'task completed': '✅',
         'debug stage': '🐛',
         'testing stage': '🧪',
-        'research summary': '📋',
         'research subtasks': '📚',
         'skipping implementation stage': '⏭️'
     }

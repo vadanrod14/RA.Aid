@@ -24,7 +24,6 @@ from ra_aid.prompts import (
     RESEARCH_PROMPT,
     PLANNING_PROMPT,
     IMPLEMENTATION_PROMPT,
-    SUMMARY_PROMPT
 )
 from ra_aid.exceptions import TaskCompletedException
 import time
@@ -172,42 +171,6 @@ def run_implementation_stage(base_task, tasks, plan, related_files):
         # Run agent for this task
         run_agent_with_retry(task_agent, task_prompt, {"configurable": {"thread_id": "abc123"}, "recursion_limit": 100})
 
-def summarize_research_findings(base_task: str, config: dict) -> None:
-    """Summarize research findings for informational queries.
-
-    Generates and prints a concise summary of research findings including key facts
-    and research notes collected during the research stage.
-
-    Args:
-        base_task: The original user query
-        config: Configuration dictionary for the agent
-    """
-    print_stage_header("Research Summary")
-    
-    # Create dedicated memory for research summarization
-    summary_memory = MemorySaver()
-    
-    # Create fresh agent for summarization with its own memory
-    summary_agent = create_react_agent(model, implementation_tools, checkpointer=summary_memory)
-    
-    summary_prompt = SUMMARY_PROMPT.format(
-        base_task=base_task,
-        research_notes=get_memory_value('research_notes'),
-        key_facts=get_memory_value('key_facts'),
-        key_snippets=get_memory_value('key_snippets')
-    )
-        
-    while True:
-        try:
-            for chunk in summary_agent.stream(
-                {"messages": [HumanMessage(content=summary_prompt)]}, 
-                config
-            ):
-                print_agent_output(chunk)
-            break
-        except ChatAnthropic.InternalServerError as e:
-            print(f"Encountered Anthropic Internal Server Error: {e}. Retrying...")
-            continue
 
 def run_research_subtasks(base_task: str, config: dict):
     """Run research subtasks with separate agents."""
@@ -301,11 +264,8 @@ Be very thorough in your research and emit lots of snippets, key facts. If you t
             # Run any research subtasks
             run_research_subtasks(base_task, config)
             
-            # For informational queries, summarize findings
-            if is_informational_query():
-                summarize_research_findings(base_task, config)
-            else:
-                # Only proceed with planning and implementation if not an informational query
+            # Proceed with planning and implementation if not an informational query
+            if not is_informational_query():
                 print_stage_header("Planning Stage")
                 planning_prompt = PLANNING_PROMPT.format(
                     research_notes=get_memory_value('research_notes'),

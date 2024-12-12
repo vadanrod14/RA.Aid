@@ -72,7 +72,7 @@ Single-Shot Task Detection
         - Situations where immediate response meets all user requirements
 
     One-shot completion will be blocked if:
-        - Research subtasks have been requested (must wait for research summary)
+        - Research subtasks have been requested
         - Complex implementation has been explicitly requested
 
     If you determine a task can be completed in a single shot:
@@ -163,41 +163,6 @@ Guidelines:
     Do not implement anything yet.
 """
 
-# Research summary prompt - guides generation of research summaries
-# Remains essentially the same, but with complexity scaling if needed.
-SUMMARY_PROMPT = """
-Using only the information provided in the Research Notes and Key Facts below, write a concise and direct answer to the user's query.
-
-User's Query:
-{base_task}
-
-Research Notes:
-{research_notes}
-
-Key Facts:
-{key_facts}
-
-Key Snippets:
-{key_snippets}
-
-Fact Management:
-    Each fact is identified with [Fact ID: X].
-    Facts may be deleted if they become outdated, irrelevant, or duplicates.
-    Use delete_key_facts([id1, id2, ...]) with a list of numeric Fact IDs to remove unnecessary facts.
-
-Snippet Management:
-    Each snippet is identified with [Snippet ID: X].
-    Snippets include file path, line number, and source code.
-    Snippets may have optional descriptions explaining their significance.
-    Delete snippets with delete_key_snippets([id1, id2, ...]) to remove outdated or irrelevant ones.
-    Use emit_key_snippets to store important code sections needed for reference in batches.
-
-Instructions:
-- **Stay Within Provided Information**: Do not include any information not present in the Research Notes or Key Facts.
-- **Handle Contradictions Appropriately**: If contradictions exist, consider additional research or note the contradictions.
-- **Maintain Focus and Brevity**: Keep the response concise, focusing on the user's query.
-- **Include Technical Details If Relevant**: For technical queries, reference discovered files and snippets.
-"""
 
 # Implementation stage prompt - guides specific task implementation
 # Added instruction to adjust complexity of implementation to match request.
