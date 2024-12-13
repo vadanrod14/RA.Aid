@@ -151,7 +151,7 @@ def list_directory_tree(
     follow_links: bool = False,
     show_size: bool = False,  # Default to not showing size
     show_modified: bool = False,  # Default to not showing modified time
-    exclude_patterns: Optional[List[str]] = None
+    exclude_patterns: List[str] = None
 ) -> str:
     """List directory contents in a tree format with optional metadata.
     

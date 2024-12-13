@@ -27,8 +27,8 @@ def fuzzy_find_project_files(
     repo_path: str = ".",
     threshold: int = 60,
     max_results: int = 10,
-    include_paths: Optional[List[str]] = None,
-    exclude_patterns: Optional[List[str]] = None
+    include_paths: List[str] = None,
+    exclude_patterns: List[str] = None
 ) -> List[Tuple[str, int]]:
     """Fuzzy find files in a git repository matching the search term.
     

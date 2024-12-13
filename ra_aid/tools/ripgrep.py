@@ -28,11 +28,11 @@ DEFAULT_EXCLUDE_DIRS = [
 def ripgrep_search(
     pattern: str,
     *,
-    file_type: Optional[str] = None,
+    file_type: str = None,
     case_sensitive: bool = True,
     include_hidden: bool = False,
     follow_links: bool = False,
-    exclude_dirs: Optional[List[str]] = None
+    exclude_dirs: List[str] = None
 ) -> Dict[str, Union[str, int, bool]]:
     """Execute a ripgrep (rg) search with formatting and common options.
 

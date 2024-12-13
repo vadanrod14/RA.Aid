@@ -20,7 +20,8 @@ def print_agent_output(chunk: Dict[str, Any]) -> None:
                 # Handle text content
                 if isinstance(msg.content, list):
                     for content in msg.content:
-                        if content['type'] == 'text':
+                        if content['type'] == 'text' and content['text'].strip():
                             console.print(Panel(Markdown(content['text']), title="🤖 Assistant"))
                 else:
-                    console.print(Panel(Markdown(msg.content), title="🤖 Assistant"))
+                    if msg.content.strip():
+                        console.print(Panel(Markdown(msg.content), title="🤖 Assistant"))

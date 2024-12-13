@@ -28,6 +28,7 @@ from ra_aid.prompts import (
 from ra_aid.exceptions import TaskCompletedException
 import time
 from anthropic import APIError, APITimeoutError, RateLimitError, InternalServerError
+from ra_aid.llm import initialize_llm
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -50,17 +51,39 @@ Examples:
         help='Only perform research without implementation'
     )
     parser.add_argument(
+        '--provider',
+        type=str,
+        default='anthropic',
+        choices=['anthropic', 'openai', 'openrouter', 'openai-compatible'],
+        help='The LLM provider to use'
+    )
+    parser.add_argument(
+        '--model',
+        type=str,
+        help='The model name to use (required for non-Anthropic providers)'
+    )
+    parser.add_argument(
         '--cowboy-mode',
         action='store_true',
         help='Skip interactive approval for shell commands'
     )
-    return parser.parse_args()
+    
+    args = parser.parse_args()
+    
+    # Set default model for Anthropic, require model for other providers
+    if args.provider == 'anthropic':
+        if not args.model:
+            args.model = 'claude-3-5-sonnet-20241022'
+    elif not args.model:
+        parser.error(f"--model is required when using provider '{args.provider}'")
+    
+    return args
 
 # Create console instance
 console = Console()
 
 # Create the base model
-model = ChatAnthropic(model_name="claude-3-5-sonnet-20241022")
+model = initialize_llm(parse_arguments().provider, parse_arguments().model)
 
 # Create individual memory objects for each agent
 research_memory = MemorySaver()
@@ -239,21 +262,30 @@ def validate_environment():
     """Validate required environment variables and dependencies."""
     missing = []
     
-    # Check API keys
-    if not os.environ.get('ANTHROPIC_API_KEY'):
-        missing.append('ANTHROPIC_API_KEY environment variable is not set')
-    if not os.environ.get('OPENAI_API_KEY'):
-        missing.append('OPENAI_API_KEY environment variable is not set')
-    
-    # Check for aider binary
-    if not shutil.which('aider'):
-        missing.append('aider binary not found in PATH. Please install aider: pip install aider')
-    
-    if missing:
-        error_list = "\n".join(f"- {error}" for error in missing)
-        print_error(f"Missing required dependencies:\n\n{error_list}")
-        sys.exit(1)
+    args = parse_arguments()
+    provider = args.provider
 
+    # Check API keys based on provider
+    if provider == "anthropic":
+        if not os.environ.get('ANTHROPIC_API_KEY'):
+            missing.append('ANTHROPIC_API_KEY environment variable is not set')
+    elif provider == "openai":
+        if not os.environ.get('OPENAI_API_KEY'):
+            missing.append('OPENAI_API_KEY environment variable is not set')
+    elif provider == "openrouter":
+        if not os.environ.get('OPENROUTER_API_KEY'):
+            missing.append('OPENROUTER_API_KEY environment variable is not set')
+    elif provider == "openai-compatible":
+        if not os.environ.get('OPENAI_API_KEY'):
+            missing.append('OPENAI_API_KEY environment variable is not set')
+        if not os.environ.get('OPENAI_API_BASE'):
+            missing.append('OPENAI_API_BASE environment variable is not set')
+
+    if missing:
+        print_error("Missing required dependencies:")
+        for item in missing:
+            print_error(f"- {item}")
+        sys.exit(1)
 
 def main():
     """Main entry point for the ra-aid command line tool."""

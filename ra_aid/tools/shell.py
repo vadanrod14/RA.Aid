@@ -30,15 +30,6 @@ def run_shell_command(command: str) -> Dict[str, Union[str, int, bool]]:
        - Environment: .env, venv, env
        - IDE: .idea, .vscode
     3. Avoid doing recursive lists, finds, etc. that could be slow and have a ton of output. Likewise, avoid flags like '-l' that needlessly increase the output. But if you really need to, you can.
-    
-    Args:
-        command: List of command arguments. First item is the command, rest are arguments.
-        
-    Returns:
-        A dictionary containing:
-            - output: The command output (stdout + stderr combined)
-            - return_code: The process return code (0 typically means success)
-            - success: Boolean indicating if the command succeeded (return code == 0)
     """
     # Check if we need approval
     cowboy_mode = _global_memory.get('config', {}).get('cowboy_mode', False)
