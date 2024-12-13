@@ -117,10 +117,7 @@ def get_research_tools(research_only: bool = False) -> list:
     ]
     
     if not research_only:
-        print("NOT RESEARCH ONLY")
         tools.append(request_implementation)
-    else:
-        print("RESEARCH ONLY")
     
     return tools
 

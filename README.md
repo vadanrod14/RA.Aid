@@ -104,16 +104,24 @@ pip install aider-chat
 2. API keys for the required AI services:
 
 ```bash
-# Required: Set up your Anthropic API key
+# Default: Set up Anthropic API key (default provider)
 export ANTHROPIC_API_KEY=your_api_key_here
 
-# Optional: Set up OpenAI API key if using OpenAI features
+# Required for expert tool and OpenAI provider
 export OPENAI_API_KEY=your_api_key_here
+
+# Required for OpenRouter provider
+export OPENROUTER_API_KEY=your_api_key_here
+
+# For OpenAI-compatible providers
+export OPENAI_API_KEY=your_api_key_here
+export OPENAI_API_BASE=your_api_base_url
 ```
 
 You can get your API keys from:
 - Anthropic API key: https://console.anthropic.com/
 - OpenAI API key: https://platform.openai.com/api-keys
+- OpenRouter API key: https://openrouter.ai/keys
 
 ## Usage
 
@@ -132,8 +140,68 @@ ra-aid -m "Explain the authentication flow" --research-only
 - `-m, --message`: The task or query to be executed (required)
 - `--research-only`: Only perform research without implementation
 - `--cowboy-mode`: Skip interactive approval for shell commands
+- `--provider`: Specify the model provider (See Model Configuration section)
+- `--model`: Specify the model name (See Model Configuration section)
+
+### Model Configuration
+
+RA.Aid supports multiple AI providers and models. The default model is Anthropic's Claude 3 Sonnet (`claude-3-5-sonnet-20241022`).
+
+#### Environment Variables
+
+RA.Aid supports multiple providers through environment variables:
+
+- `ANTHROPIC_API_KEY`: Required for the default Anthropic provider
+- `OPENAI_API_KEY`: Required for OpenAI provider and expert tool
+- `OPENROUTER_API_KEY`: Required for OpenRouter provider
+- `OPENAI_API_BASE`: Required for OpenAI-compatible providers along with `OPENAI_API_KEY`
+
+You can set these permanently in your shell's configuration file (e.g., `~/.bashrc` or `~/.zshrc`):
+
+```bash
+# Default provider (Anthropic)
+export ANTHROPIC_API_KEY=your_api_key_here
+
+# For OpenAI features and expert tool
+export OPENAI_API_KEY=your_api_key_here
+
+# For OpenRouter provider
+export OPENROUTER_API_KEY=your_api_key_here
+
+# For OpenAI-compatible providers
+export OPENAI_API_BASE=your_api_base_url
+```
+
+Note: The expert tool always uses OpenAI's `o1-preview` model and requires `OPENAI_API_KEY` to be set, even if you're using a different provider for the main application.
+
+#### Examples
+
+1. **Using Anthropic (Default)**
+   ```bash
+   # Uses default model (claude-3-5-sonnet-20241022)
+   ra-aid -m "Your task"
+
+   # Or explicitly specify:
+   ra-aid -m "Your task" --provider anthropic --model claude-3-5-sonnet-20241022
+   ```
+
+2. **Using OpenAI**
+   ```bash
+   ra-aid -m "Your task" --provider openai --model gpt-4o
+   ```
+
+3. **Using OpenRouter**
+   ```bash
+   ra-aid -m "Your task" --provider openrouter --model mistralai/mistral-large-2411
+   ```
+
+**Important Notes:**
+- Performance varies between models. The default Claude 3 Sonnet model currently provides the best and most reliable results.
+- Model configuration is done via command line arguments: `--provider` and `--model`
+- The `--model` argument is required for all providers except Anthropic (which defaults to `claude-3-5-sonnet-20241022`)
 
 ### Example Tasks
+
 1. Code Analysis:
    ```bash
    ra-aid -m "Explain how the authentication middleware works" --research-only
@@ -190,19 +258,10 @@ In the example above, the command will automatically find and update all depreca
 
 ### Environment Variables
 
-RA.Aid uses the following environment variables:
-
-- `ANTHROPIC_API_KEY` (Required): Your Anthropic API key for accessing Claude
-- `OPENAI_API_KEY` (Optional): Your OpenAI API key if using OpenAI features
-
-You can set these permanently in your shell's configuration file (e.g., `~/.bashrc` or `~/.zshrc`):
-
-```bash
-export ANTHROPIC_API_KEY=your_api_key_here
-export OPENAI_API_KEY=your_api_key_here
-```
+See the [Model Configuration](#model-configuration) section for details on provider-specific environment variables.
 
 ## Architecture
+
 
 RA.Aid implements a three-stage architecture for handling development and research tasks:
 
