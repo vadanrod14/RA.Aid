@@ -67,13 +67,45 @@ research_memory = MemorySaver()
 planning_memory = MemorySaver()
 implementation_memory = MemorySaver()
 
+def get_research_tools(research_only: bool = False) -> list:
+    """Get the list of research tools based on mode.
+    
+    Args:
+        research_only: If True, exclude implementation-related tools
+        
+    Returns:
+        List of available research tools
+    """
+    tools = [
+        list_directory_tree,
+        emit_research_subtask,
+        run_shell_command, 
+        emit_expert_context,
+        ask_expert,
+        emit_research_notes,
+        emit_related_files,
+        emit_key_facts,
+        delete_key_facts,
+        emit_key_snippets,
+        delete_key_snippets,
+        read_file_tool,
+        fuzzy_find_project_files,
+        ripgrep_search
+    ]
+    
+    if not research_only:
+        print("NOT RESEARCH ONLY")
+        tools.append(request_implementation)
+    else:
+        print("RESEARCH ONLY")
+    
+    return tools
+
 # Define tool sets for each stage
-research_tools = [list_directory_tree, emit_research_subtask, run_shell_command, emit_expert_context, ask_expert, emit_research_notes, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, request_implementation, read_file_tool, fuzzy_find_project_files, ripgrep_search]
 planning_tools = [list_directory_tree, emit_expert_context, ask_expert, emit_plan, emit_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
 implementation_tools = [list_directory_tree, run_shell_command, emit_expert_context, ask_expert, run_programming_task, emit_related_files, emit_key_facts, delete_key_facts, emit_key_snippets, delete_key_snippets, read_file_tool, fuzzy_find_project_files, ripgrep_search]
 
 # Create stage-specific agents with individual memory objects
-research_agent = create_react_agent(model, research_tools, checkpointer=research_memory)
 planning_agent = create_react_agent(model, planning_tools, checkpointer=planning_memory)
 implementation_agent = create_react_agent(model, implementation_tools, checkpointer=implementation_memory)
 
@@ -180,10 +212,11 @@ def run_research_subtasks(base_task: str, config: dict):
         
     print_stage_header("Research Subtasks")
     
-    # Create tools for subtask agents (excluding spawn_research_subtask and request_implementation)
+    # Get tools for subtask agents (excluding research subtask and implementation tools)
+    research_only = _global_memory.get('config', {}).get('research_only', False)
     subtask_tools = [
-        tool for tool in research_tools 
-        if tool.name not in ['emit_research_subtask', 'request_implementation']
+        tool for tool in get_research_tools(research_only=research_only)
+        if tool.name not in ['emit_research_subtask']
     ]
     
     for i, subtask in enumerate(subtasks, 1):
@@ -246,6 +279,9 @@ def main():
             
             # Store config in global memory for access by is_informational_query
             _global_memory['config'] = config
+            
+            # Create research agent now that config is available
+            research_agent = create_react_agent(model, get_research_tools(research_only=_global_memory.get('config', {}).get('research_only', False)), checkpointer=research_memory)
 
             # Run research stage
             print_stage_header("Research Stage")
