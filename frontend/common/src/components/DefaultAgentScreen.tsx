@@ -1,28 +1,40 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { PanelLeft, Plus, X, MoreHorizontal } from 'lucide-react';
+import { PanelLeft, Plus } from 'lucide-react';
 import {
   Button,
   Layout,
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
+  // Collapsible, // Unused imports removed
+  // CollapsibleTrigger,
+  // CollapsibleContent,
+  // Card,
+  // CardHeader,
+  // CardContent,
+  // CardTitle,
+  // CardDescription,
 } from './ui';
 import { SessionDrawer } from './SessionDrawer';
 import { SessionList } from './SessionList';
 import { TrajectoryPanel } from './TrajectoryPanel';
 import { InputSection } from './InputSection';
 import { useSessionStore, useClientConfigStore, useTrajectoryStore } from '../store';
-import { Trajectory, safeBackendToTrajectory, BackendTrajectory } from '../models/trajectory'; // Added Trajectory models
+import { BackendTrajectory, safeBackendToTrajectory } from '../models/trajectory';
 import { WebSocketConnection, WebSocketConfig } from '../websocket/connection';
 import logoBlack from '../assets/logo-black-transparent.png';
 import logoWhite from '../assets/logo-white-transparent.gif';
-import { AgentSession, SessionStatus } from '../models/session'; // <-- Import AgentSession and SessionStatus
+import { SessionStatus } from '../models/session'; // <-- Import SessionStatus
+
+// Helper function for theme setup
+const setupTheme = () => {
+  const storedTheme = localStorage.getItem('theme');
+  const isDark = storedTheme ? storedTheme === 'dark' : true; // Default to dark
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+  return isDark;
+};
 
 /**
  * DefaultAgentScreen component
@@ -37,12 +49,17 @@ export const DefaultAgentScreen: React.FC = () => {
   // State for theme (dark is default)
   const [isDarkTheme, setIsDarkTheme] = useState(true);
 
+  // Refs and state for autoscroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isUserScrolledUp, setIsUserScrolledUp] = useState<boolean>(false);
+
   // WebSocket connection management
   const wsConnectionRef = useRef<WebSocketConnection | null>(null);
   const { host, port } = useClientConfigStore();
 
   const addOrUpdateTrajectory = useTrajectoryStore((state) => state.addOrUpdateTrajectory);
-  const updateSessionStatus = useSessionStore((state) => state.updateSessionStatus); // <-- Get action from store
+  const updateSessionStatus = useSessionStore((state) => state.updateSessionStatus);
+  const trajectories = useTrajectoryStore((state) => state.trajectories); // Get trajectories for autoscroll effect
 
   const handleWebSocketMessage = useCallback((messageData: any) => {
     console.log('[DefaultAgentScreen] handleWebSocketMessage received:', messageData);
@@ -60,14 +77,13 @@ export const DefaultAgentScreen: React.FC = () => {
       if (convertedTrajectory) {
         console.log('[DefaultAgentScreen] Converted trajectory, updating store:', convertedTrajectory);
         addOrUpdateTrajectory(convertedTrajectory);
+        // Autoscroll is handled by the useEffect below
       } else {
         console.error('[DefaultAgentScreen] Failed to convert backend trajectory:', backendTrajectory);
       }
-    } else if (messageData.type === 'session_update' && messageData.payload) { // <-- Add handler for session_update
+    } else if (messageData.type === 'session_update' && messageData.payload) {
       console.log('[DefaultAgentScreen] Received session_update message:', messageData.payload);
-      // Expecting id: number, status: SessionStatus
-      const sessionPayload = messageData.payload as { id: number; status: string /* other fields */ };
-      // Basic validation for status before calling store
+      const sessionPayload = messageData.payload as { id: number; status: string };
       if (
         sessionPayload.id && typeof sessionPayload.id === 'number' &&
         sessionPayload.status && ['pending', 'running', 'completed', 'error'].includes(sessionPayload.status)
@@ -79,29 +95,25 @@ export const DefaultAgentScreen: React.FC = () => {
       }
     } else if (messageData.type) {
        console.log(`[DefaultAgentScreen] Received non-trajectory/session_update message type: ${messageData.type}`);
-       // Handle other message types here if needed in the future
     } else {
         console.warn('[DefaultAgentScreen] Received message without a type:', messageData);
     }
-  }, [addOrUpdateTrajectory, updateSessionStatus]); // <-- Add updateSessionStatus to dependency array
+  }, [addOrUpdateTrajectory, updateSessionStatus]);
 
   // Establish WebSocket connection on mount
   useEffect(() => {
-    // Prevent multiple connections
     if (wsConnectionRef.current) return;
 
     const url = `ws://${host}:${port}/v1/ws`;
     const config: WebSocketConfig = {
       url,
-      onMessage: handleWebSocketMessage, // Pass the memoized handler
-      // Use default heartbeat/reconnection settings from WebSocketConnection
+      onMessage: handleWebSocketMessage,
     };
 
     console.log(`Attempting WebSocket connection to ${url} with message handler`);
     wsConnectionRef.current = new WebSocketConnection(config);
     wsConnectionRef.current.connect();
 
-    // Cleanup function on component unmount
     return () => {
       if (wsConnectionRef.current) {
         console.log('Closing WebSocket connection');
@@ -109,24 +121,7 @@ export const DefaultAgentScreen: React.FC = () => {
         wsConnectionRef.current = null;
       }
     };
-  }, [host, port, handleWebSocketMessage]); // Reconnect if host/port changes
-
-  // Handle message submission for existing sessions
-  const handleSubmit = async (message: string) => {
-    if (!selectedSessionId || !message.trim()) return;
-
-    try {
-      // TODO: Implement reply to existing session via WebSocket
-      // This will need a specific message format or API call
-      console.log('Message submitted to existing session:', message, 'sessionId:', selectedSessionId);
-      // Example: wsConnectionRef.current?.send(JSON.stringify({ type: 'reply', sessionId: selectedSessionId, message }));
-
-      return true; // Success (assuming optimistic update or WS confirmation)
-    } catch (error) {
-      console.error("Error handling message submission:", error);
-      return false; // Failure
-    }
-  };
+  }, [host, port, handleWebSocketMessage]);
 
   // Get session store data
   const {
@@ -138,9 +133,9 @@ export const DefaultAgentScreen: React.FC = () => {
     error,
     newSession,
     startNewSession,
-    cancelNewSession,
-    updateNewSessionMessage,
-    submitNewSession
+    // cancelNewSession, // Unused
+    // updateNewSessionMessage, // Unused
+    // submitNewSession // Unused
   } = useSessionStore();
 
   // Fetch initial sessions on component mount
@@ -164,6 +159,60 @@ export const DefaultAgentScreen: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isDrawerOpen]);
+
+  // Autoscroll Effect: Scrolls down when new trajectories arrive and user hasn't scrolled up
+  useEffect(() => {
+    if (scrollContainerRef.current && !isUserScrolledUp) {
+      const element = scrollContainerRef.current;
+      element.scrollTop = element.scrollHeight;
+      console.log('[DefaultAgentScreen] Autoscroll triggered');
+    }
+  }, [trajectories, isUserScrolledUp]); // Dependency: run when trajectories change or scroll state changes
+
+  // Scroll Event Listener Effect: Detects manual scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      const element = scrollContainerRef.current;
+      if (!element) return;
+
+      const scrollThreshold = 50; // Pixels threshold to consider user scrolled up significantly
+      const bottomThreshold = 10; // Pixels threshold to consider user back at bottom
+
+      const isAtBottom = element.scrollHeight - element.scrollTop - element.clientHeight < bottomThreshold;
+
+      if (isAtBottom) {
+        if (isUserScrolledUp) { // Only update state if it changes
+            console.log('[DefaultAgentScreen] Scrolled back to bottom, enabling autoscroll');
+            setIsUserScrolledUp(false);
+        }
+      } else {
+        const scrolledUpAmount = element.scrollTop; // Check how far from the top
+        // If user has scrolled up noticeably (more than the threshold from the top)
+        // OR if the distance from bottom is greater than the threshold (more robust check)
+        if (scrolledUpAmount > scrollThreshold || (element.scrollHeight - element.scrollTop - element.clientHeight > scrollThreshold)) {
+            if (!isUserScrolledUp) { // Only update state if it changes
+                console.log('[DefaultAgentScreen] User scrolled up, disabling autoscroll');
+                setIsUserScrolledUp(true);
+            }
+        }
+      }
+    };
+
+    const element = scrollContainerRef.current;
+    if (element) {
+      element.addEventListener('scroll', handleScroll, { passive: true }); // Use passive listener for performance
+      console.log('[DefaultAgentScreen] Scroll listener added');
+    }
+
+    // Cleanup function
+    return () => {
+      if (element) {
+        element.removeEventListener('scroll', handleScroll);
+        console.log('[DefaultAgentScreen] Scroll listener removed');
+      }
+    };
+  }, [isUserScrolledUp]); // Re-attach listener if isUserScrolledUp changes (though ideally not needed often)
+
 
   // Handle session selection - Accepts number
   const handleSessionSelect = (sessionId: number) => {
@@ -221,8 +270,8 @@ export const DefaultAgentScreen: React.FC = () => {
     <div className="h-full flex flex-col p-4">
       <SessionList
         sessions={sessions}
-        onSelectSession={handleSessionSelect} // Pass handleSessionSelect (now expects number)
-        currentSessionId={selectedSessionId} // Pass number | null
+        onSelectSession={handleSessionSelect}
+        currentSessionId={selectedSessionId}
         className="flex-1 pr-1 -mr-1"
         isLoading={isLoading}
         error={error}
@@ -235,8 +284,8 @@ export const DefaultAgentScreen: React.FC = () => {
   const drawerContent = (
     <SessionDrawer
       sessions={sessions}
-      currentSessionId={selectedSessionId} // Pass number | null
-      onSelectSession={handleSessionSelect} // Pass handleSessionSelect (now expects number)
+      currentSessionId={selectedSessionId}
+      onSelectSession={handleSessionSelect}
       isOpen={isDrawerOpen}
       onClose={() => setIsDrawerOpen(false)}
     />
@@ -246,14 +295,15 @@ export const DefaultAgentScreen: React.FC = () => {
   const mainContent = selectedSessionId !== null ? (
     // Existing session view
     <div className="flex flex-col h-full w-full">
-      <div className="flex-1 overflow-auto w-full">
+      {/* Assign the ref to the scrollable container */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-auto w-full">
         {/* Session title with minimal spacing */}
-        <div className="px-6 pt-4 pb-2 border-b border-border/30">
+        <div className="px-6 pt-4 pb-2 border-b border-border/30 sticky top-0 bg-background z-10"> {/* Added sticky positioning and background */}
           <h2 className="text-xl font-medium">{sessionName}</h2>
         </div>
         {/* Trajectory panel with consistent spacing */}
         <TrajectoryPanel
-          sessionId={selectedSessionId} // Pass number | null
+          sessionId={selectedSessionId}
           addBottomPadding={true}
           customClassName="px-6 pt-3 pb-4" // Reduced top padding to minimize gap
         />
@@ -265,7 +315,7 @@ export const DefaultAgentScreen: React.FC = () => {
     // New session composition view
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 overflow-auto w-full">
-        {/* Session title with minimal spacing */}
+        {/* Session title */}
         <div className="px-6 pt-4 pb-2 border-b border-border/30">
           <h2 className="text-xl font-medium">Create New Session</h2>
         </div>
@@ -273,6 +323,7 @@ export const DefaultAgentScreen: React.FC = () => {
           <p className="text-muted-foreground mb-6">
             Type your message in the input box below to start a new conversation with the agent.
           </p>
+          {/* Informational cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             <div className="p-4 rounded-md border border-border bg-background/50">
               <h4 className="text-sm font-medium mb-2">Research Mode</h4>
@@ -291,11 +342,10 @@ export const DefaultAgentScreen: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Input section for new session */}
       <InputSection
         isNewSession={true}
         isDrawerOpen={isDrawerOpen}
-        // Pass WebSocket sending capability if InputSection needs it for new sessions
-        // sendWebSocketMessage={(msg) => wsConnectionRef.current?.send(JSON.stringify(msg))}
       />
     </div>
   ) : (
@@ -321,8 +371,7 @@ export const DefaultAgentScreen: React.FC = () => {
       };
     }, []);
 
-    // Removed isInputVisible calculation
-    const buttonPosition = "bottom-4"; // Always position at bottom-4 when rendered
+    const buttonPosition = "bottom-4";
     const buttonStyle = "p-2 rounded-md shadow-md bg-zinc-800/90 hover:bg-zinc-700 text-zinc-100 flex items-center justify-center border border-zinc-700 dark:border-zinc-600";
 
     if (!mounted || newSession) return null; // Don't show if creating new session
@@ -356,14 +405,4 @@ export const DefaultAgentScreen: React.FC = () => {
   );
 };
 
-// Helper function for theme setup
-const setupTheme = () => {
-  const storedTheme = localStorage.getItem('theme');
-  const isDark = storedTheme ? storedTheme === 'dark' : true; // Default to dark
-  if (isDark) {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-  return isDark;
-};
+// Note: setupTheme moved to the top for better organization
