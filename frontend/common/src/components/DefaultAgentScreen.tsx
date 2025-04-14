@@ -4,14 +4,6 @@ import { PanelLeft, Plus } from 'lucide-react';
 import {
   Button,
   Layout,
-  // Collapsible, // Unused imports removed
-  // CollapsibleTrigger,
-  // CollapsibleContent,
-  // Card,
-  // CardHeader,
-  // CardContent,
-  // CardTitle,
-  // CardDescription,
 } from './ui';
 import { SessionDrawer } from './SessionDrawer';
 import { SessionList } from './SessionList';
@@ -22,7 +14,7 @@ import { BackendTrajectory, safeBackendToTrajectory } from '../models/trajectory
 import { WebSocketConnection, WebSocketConfig } from '../websocket/connection';
 import logoBlack from '../assets/logo-black-transparent.png';
 import logoWhite from '../assets/logo-white-transparent.gif';
-import { SessionStatus } from '../models/session'; // <-- Import SessionStatus
+import { AgentSession, SessionStatus, safeBackendToAgentSession } from '../models/session'; // <-- Import AgentSession and safeBackendToAgentSession
 
 // Helper function for theme setup
 const setupTheme = () => {
@@ -59,6 +51,7 @@ export const DefaultAgentScreen: React.FC = () => {
 
   const addOrUpdateTrajectory = useTrajectoryStore((state) => state.addOrUpdateTrajectory);
   const updateSessionStatus = useSessionStore((state) => state.updateSessionStatus);
+  const updateSessionDetails = useSessionStore((state) => state.updateSessionDetails); // <-- Get the new action
   const trajectories = useTrajectoryStore((state) => state.trajectories); // Get trajectories for autoscroll effect
 
   const handleWebSocketMessage = useCallback((messageData: any) => {
@@ -93,12 +86,24 @@ export const DefaultAgentScreen: React.FC = () => {
       } else {
          console.warn("[DefaultAgentScreen] Received invalid session_update payload:", sessionPayload);
       }
+    } else if (messageData.type === 'session_details_update' && messageData.payload) { // <-- Handle new type
+      console.log('[DefaultAgentScreen] Received session_details_update message:', messageData.payload);
+      // Payload should be a BackendSession object
+      const backendSession = messageData.payload; // Assuming payload is directly the BackendSession
+      const convertedSession = safeBackendToAgentSession(backendSession); // Convert backend format to frontend format
+
+      if (convertedSession) {
+          console.log(`[DefaultAgentScreen] Processing session_details_update for ${convertedSession.id}`);
+          updateSessionDetails(convertedSession); // Update store with the full session details
+      } else {
+          console.warn("[DefaultAgentScreen] Received invalid session_details_update payload or conversion failed:", backendSession);
+      }
     } else if (messageData.type) {
-       console.log(`[DefaultAgentScreen] Received non-trajectory/session_update message type: ${messageData.type}`);
+       console.log(`[DefaultAgentScreen] Received unhandled message type: ${messageData.type}`);
     } else {
         console.warn('[DefaultAgentScreen] Received message without a type:', messageData);
     }
-  }, [addOrUpdateTrajectory, updateSessionStatus]);
+  }, [addOrUpdateTrajectory, updateSessionStatus, updateSessionDetails]); // <-- Add updateSessionDetails to dependencies
 
   // Establish WebSocket connection on mount
   useEffect(() => {
@@ -133,9 +138,6 @@ export const DefaultAgentScreen: React.FC = () => {
     error,
     newSession,
     startNewSession,
-    // cancelNewSession, // Unused
-    // updateNewSessionMessage, // Unused
-    // submitNewSession // Unused
   } = useSessionStore();
 
   // Fetch initial sessions on component mount
@@ -234,7 +236,7 @@ export const DefaultAgentScreen: React.FC = () => {
 
   // Get selected session name
   const selectedSession = sessions.find(s => s.id === selectedSessionId);
-  const sessionName = selectedSession?.name || 'Unknown';
+  const sessionName = selectedSession?.name || 'Unknown'; // Rely on the session name from the store
 
   // Render header content
   const headerContent = (
@@ -269,7 +271,7 @@ export const DefaultAgentScreen: React.FC = () => {
   const sidebarContent = (
     <div className="h-full flex flex-col p-4">
       <SessionList
-        sessions={sessions}
+        sessions={sessions} // Pass the sessions from the store
         onSelectSession={handleSessionSelect}
         currentSessionId={selectedSessionId}
         className="flex-1 pr-1 -mr-1"
@@ -283,7 +285,7 @@ export const DefaultAgentScreen: React.FC = () => {
   // Render drawer
   const drawerContent = (
     <SessionDrawer
-      sessions={sessions}
+      sessions={sessions} // Pass the sessions from the store
       currentSessionId={selectedSessionId}
       onSelectSession={handleSessionSelect}
       isOpen={isDrawerOpen}
@@ -299,7 +301,7 @@ export const DefaultAgentScreen: React.FC = () => {
       <div ref={scrollContainerRef} className="flex-1 overflow-auto w-full">
         {/* Session title with minimal spacing */}
         <div className="px-6 pt-4 pb-2 border-b border-border/30 sticky top-0 bg-background z-10"> {/* Added sticky positioning and background */}
-          <h2 className="text-xl font-medium">{sessionName}</h2>
+          <h2 className="text-xl font-medium">{sessionName}</h2> {/* Name comes directly from selectedSession */}
         </div>
         {/* Trajectory panel with consistent spacing */}
         <TrajectoryPanel
