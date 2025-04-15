@@ -100,6 +100,22 @@ models_params = {
             "latency_coefficient": DEFAULT_BASE_LATENCY,
             # "default_backend": AgentBackendType.CIAYN,
         },
+        "gpt-4.1-mini": {
+            "token_limit": 1000000,
+            "supports_temperature": True,
+            "default_temperature": DEFAULT_TEMPERATURE,
+            "supports_reasoning_effort": False,
+            "latency_coefficient": DEFAULT_BASE_LATENCY,
+            # "default_backend": AgentBackendType.CIAYN,
+        },
+        "gpt-4.1-nano": {
+            "token_limit": 1000000,
+            "supports_temperature": True,
+            "default_temperature": DEFAULT_TEMPERATURE,
+            "supports_reasoning_effort": False,
+            "latency_coefficient": DEFAULT_BASE_LATENCY,
+            # "default_backend": AgentBackendType.CIAYN,
+        },
         "gpt-3.5-turbo-0125": {
             "token_limit": 16385,
             "supports_temperature": True,
