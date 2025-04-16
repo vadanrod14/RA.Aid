@@ -1,3 +1,24 @@
+## [0.27.0] 2025-04-16
+
+### Added
+- Support for `o4-mini` and `o3` models
+
+### Changed
+- **Default Model/Provider Logic (`ra_aid/__main__.py`):**
+    - Changed the default OpenAI model from `gpt-4o` to `o4-mini`.
+    - Updated the default LLM provider selection priority based on available API keys to: Gemini (`GEMINI_API_KEY`), then OpenAI (`OPENAI_API_KEY`), then Anthropic (`ANTHROPIC_API_KEY`).
+- **Expert Model Selection Logic (`ra_aid/__main__.py`, `ra_aid/llm.py`):**
+    - Introduced dedicated environment variables for expert model API keys (e.g., `EXPERT_OPENAI_API_KEY`, `EXPERT_ANTHROPIC_API_KEY`).
+    - Updated the priority order for selecting the *expert* provider when none is explicitly set: `EXPERT_OPENAI_API_KEY` > `GEMINI_API_KEY` > `EXPERT_ANTHROPIC_API_KEY` > `DEEPSEEK_API_KEY`.
+    - Refined fallback logic: If no specific expert key is found, it uses the main provider configuration. A special case ensures that if the main provider is OpenAI and no expert model is specified, the expert model defaults to auto-selection (prioritizing `o3`).
+    - Updated the default OpenAI *expert* model selection to prioritize only `"o3"`. An error is now raised if `"o3"` is unavailable via the API key and no specific expert model was requested by the user.
+- **Model Parameters (`ra_aid/models_params.py`):**
+    - Added configuration parameters (token limits, capabilities) for the `o4-mini` and `o3` models.
+
+### Testing (`tests/ra_aid/test_default_provider.py`, `tests/ra_aid/test_llm.py`)
+- Added/updated tests to verify the new default provider logic, ensuring correct prioritization.
+- Added/updated tests for expert model selection to reflect the new prioritization and the default selection of `o3` for OpenAI expert.
+
 ## [0.26.0] 2025-04-16
 
 ### Frontend
