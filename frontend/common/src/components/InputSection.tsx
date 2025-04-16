@@ -25,7 +25,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null); // Ref for the textarea
-  const formRef = useRef<HTMLFormElement>(null);
 
   // Get session store state and actions for new session handling
   const {
@@ -175,7 +174,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               </Button>
             </div>
           )}
-          <form ref={formRef} onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <textarea
               ref={textareaRef} // Attach the ref here
               value={message}
