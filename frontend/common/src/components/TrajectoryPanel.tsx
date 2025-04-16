@@ -13,7 +13,8 @@ import {
   TaskTrajectory, // <-- Import the new TaskTrajectory component
   FuzzyFindTrajectory, // <-- Import the new FuzzyFindTrajectory component
   TaskCompletedTrajectory, // <-- Import the new TaskCompletedTrajectory component
-  PlanCompletedTrajectory
+  PlanCompletedTrajectory,
+  FileWriteTrajectory // <-- Import the new FileWriteTrajectory component
 } from './trajectories';
 import { useTrajectoryStore, useSessionStore } from '../store'; // <-- Import useSessionStore
 import { Trajectory } from '../models/trajectory';
@@ -138,6 +139,9 @@ export const TrajectoryPanel: React.FC<TrajectoryPanelProps> = ({
         break;
       case 'read_file':
         component = <ReadFileTrajectory key={trajectory.id} trajectory={trajectory} />;
+        break;
+      case 'file_write': // <-- Add case for file_write
+        component = <FileWriteTrajectory key={trajectory.id} trajectory={trajectory} />;
         break;
       case 'ripgrep_search': // Add case for ripgrep_search
         component = <RipgrepSearchTrajectory key={trajectory.id} trajectory={trajectory} />;
