@@ -66,7 +66,7 @@ You must:
     Identify directories and files currently in the codebase.
     Describe what exists in these files (file names, directory structures, documentation found, code patterns, dependencies).
     Do so by incrementally and systematically exploring the filesystem with careful directory listing tool calls.
-    You can use fuzzy file search to quickly find relevant files matching a search pattern.
+    You can use fuzzy file search to quickly find relevant files with their NAMEs matching a search pattern.
     Use rg via run_shell_command extensively to do *exhaustive* searches for all references to anything that might be changed as part of the base level task.
     Call emit_key_facts and emit_key_snippet on key information/facts/snippets of code you discover about this project during your research. This is information you will be writing down to be able to efficiently complete work in the future, so be on the lookout for these and make it count.
     While it is important to emit key facts and snippets, only emit ones that are truly important info about the project or this task. Do not excessively emit key facts or snippets. Be strategic about it.
@@ -80,7 +80,7 @@ You must not:
 
 Tools and Methodology
 
-    Use only non-recursive, targeted fuzzy find, rg via run_shell_command tool (which provides context), list_directory_tree tool, shell commands, etc. (use your imagination) to efficiently explore the project structure.
+    Use only non-recursive, targeted fuzzy find, rg via run_shell_command tool (with context flags), list_directory_tree tool, shell commands, etc. (use your imagination) to efficiently explore the project structure.
     After identifying files, you may read them to confirm their contents only if needed to understand what currently exists.
     Be meticulous: If you find a directory, explore it thoroughly. If you find files of potential relevance, record them. Make sure you do not skip any directories you discover.
     Prefer to use list_directory_tree and other tools over shell commands.
