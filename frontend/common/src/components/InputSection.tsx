@@ -212,7 +212,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                     <span className="flex items-center justify-center">
                       <span className="hidden sm:inline -mt-0.5">Research Only</span>
                       <span className="sm:hidden -mt-0.5">Research</span>
-                      <span className="flex items-center justify-around ml-4 border rounded">
+                      <span className="flex items-center justify-around ml-4 border rounded bg-muted/50 text-muted-foreground">
                         <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
                           <strong>Ctrl</strong>
                         </kbd>
@@ -228,7 +228,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
                     </span>
                   )}
                 </Button>
-                {/* Removed the <div className="flex-1"></div> spacer */}
                 <Button
                   type="submit"
                   disabled={!message.trim() || isSubmitting}
@@ -246,7 +245,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                     <span className="flex items-center justify-center">
                       <span className="hidden sm:inline -mt-0.5">Create Session</span>
                       <span className="sm:hidden -mt-0.5">Create</span>
-                      <span className="flex items-center justify-around ml-4 border rounded">
+                      <span className="flex items-center justify-around ml-4 border rounded bg-muted/15 text-gray-900">
                         <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
                           <strong>Ctrl</strong>
                         </kbd>
