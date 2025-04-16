@@ -54,7 +54,7 @@ def select_expert_model(provider: str, model: Optional[str] = None) -> Optional[
     available_models = get_available_openai_models()
 
     # Priority order for expert models
-    priority_models = ["o3-mini", "o1", "o1-preview"]
+    priority_models = ["o3", "o1", "o1-preview"]
 
     # Return first available model from priority list
     for model_name in priority_models:

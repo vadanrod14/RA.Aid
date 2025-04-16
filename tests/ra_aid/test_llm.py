@@ -424,13 +424,13 @@ def test_select_expert_model_non_openai():
 
 def test_select_expert_model_priority():
     """Test model selection follows priority order."""
-    available_models = ["gpt-4", "o1", "o3-mini"]
+    available_models = ["gpt-4", "o3", "o1"]
 
     with mock.patch(
         "ra_aid.llm.get_available_openai_models", return_value=available_models
     ):
         model = select_expert_model("openai")
-        assert model == "o3-mini"
+        assert model == "o3"
 
 
 def test_select_expert_model_no_match():

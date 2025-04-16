@@ -250,7 +250,7 @@ def launch_server(host: str, port: int, args):
 
 def parse_arguments(args=None):
     ANTHROPIC_DEFAULT_MODEL = DEFAULT_MODEL
-    OPENAI_DEFAULT_MODEL = "gpt-4o"
+    OPENAI_DEFAULT_MODEL = "o4-mini"
 
     # Case-insensitive log level argument type
     def log_level_type(value):
