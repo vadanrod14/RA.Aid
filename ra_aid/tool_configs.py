@@ -20,7 +20,6 @@ from ra_aid.tools import (
     mark_research_complete_no_implementation_required,
     put_complete_file_contents,
     read_file_tool,
-    ripgrep_search,
     run_programming_task,
     run_shell_command,
     task_completed,
@@ -144,8 +143,7 @@ def get_read_only_tools(
         list_directory_tree,
         read_file_tool,
         fuzzy_find_project_files,
-        ripgrep_search,
-        run_shell_command,  # can modify files, but we still need it for read-only tasks.
+            run_shell_command,  # can modify files, but we still need it for read-only tasks.
     ]
 
     if web_research_enabled:

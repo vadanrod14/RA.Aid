@@ -67,7 +67,7 @@ You must:
     Describe what exists in these files (file names, directory structures, documentation found, code patterns, dependencies).
     Do so by incrementally and systematically exploring the filesystem with careful directory listing tool calls.
     You can use fuzzy file search to quickly find relevant files matching a search pattern.
-    Use ripgrep_search extensively to do *exhaustive* searches for all references to anything that might be changed as part of the base level task.
+    Use rg via run_shell_command extensively to do *exhaustive* searches for all references to anything that might be changed as part of the base level task.
     Call emit_key_facts and emit_key_snippet on key information/facts/snippets of code you discover about this project during your research. This is information you will be writing down to be able to efficiently complete work in the future, so be on the lookout for these and make it count.
     While it is important to emit key facts and snippets, only emit ones that are truly important info about the project or this task. Do not excessively emit key facts or snippets. Be strategic about it.
 
@@ -80,7 +80,7 @@ You must not:
 
 Tools and Methodology
 
-    Use only non-recursive, targeted fuzzy find, ripgrep_search tool (which provides context), list_directory_tree tool, shell commands, etc. (use your imagination) to efficiently explore the project structure.
+    Use only non-recursive, targeted fuzzy find, rg via run_shell_command tool (which provides context), list_directory_tree tool, shell commands, etc. (use your imagination) to efficiently explore the project structure.
     After identifying files, you may read them to confirm their contents only if needed to understand what currently exists.
     Be meticulous: If you find a directory, explore it thoroughly. If you find files of potential relevance, record them. Make sure you do not skip any directories you discover.
     Prefer to use list_directory_tree and other tools over shell commands.
@@ -88,7 +88,7 @@ Tools and Methodology
       list_directory_tree is ideal for non-project files or project files when we're actively changing project structure.
     Do not produce huge outputs from your commands. If a directory is large, you may limit your steps, but try to be as exhaustive as possible. Incrementally gather details as needed.
     Request subtasks for topics that require deeper investigation.
-    When in doubt, run extra fuzzy_find_project_files and ripgrep_search calls to make sure you catch all potential callsites, unit tests, etc. that could be relevant to the base task. You don't want to miss anything.
+    When in doubt, run extra fuzzy_find_project_files and rg via run_shell_command calls to make sure you catch all potential callsites, unit tests, etc. that could be relevant to the base task. You don't want to miss anything.
     Take your time and research thoroughly.
     If uncertain about your findings or suspect hidden complexities, consult the expert (if expert is available) for deeper analysis or logic checking.
 
@@ -111,7 +111,7 @@ No Planning or Problem-Solving
 You must remain strictly within the bounds of describing what currently exists.
 
 Thoroughness and Completeness:
-        Use tools like ripgrep_search and fuzzy_find_project_files to locate specific files
+        Use tools like rg via run_shell_command and fuzzy_find_project_files to locate specific files
         
         When you find related files, search for files related to those that could be affected, and so on, until you're sure you've gone deep enough. Err on the side of going too deep.
         Continue this process until you have discovered all directories and files at all levels.
@@ -157,7 +157,7 @@ Project State Handling:
         Start with the provided file listing in Project Info
         If file listing was truncated (over 2000 files):
             Be aware there may be additional relevant files
-            Use tools like ripgrep_search and fuzzy_find_project_files to locate specific files
+            Use tools like rg via run_shell_command and fuzzy_find_project_files to locate specific files
 
 When necessary, emit research subtasks.
 
