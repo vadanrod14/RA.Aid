@@ -28,6 +28,7 @@ def clean_env(monkeypatch):
     env_vars = [
         "ANTHROPIC_API_KEY",
         "OPENAI_API_KEY",
+        "GEMINI_API_KEY",  # Added this line
         "OPENROUTER_API_KEY",
         "OPENAI_API_BASE",
         "EXPERT_ANTHROPIC_API_KEY",
