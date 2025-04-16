@@ -1,3 +1,24 @@
+## [0.26.0] 2025-04-16
+
+### Frontend
+- Implement improved autoscroll logic with user scroll detection in `DefaultAgentScreen.tsx`.
+- Add `Ctrl+Space` shortcut for new session and completion message in `DefaultAgentScreen.tsx`.
+- Make session title header sticky in `DefaultAgentScreen.tsx`.
+- Add `Ctrl+Enter` (submit) and `Ctrl+Shift+Enter` (research-only) shortcuts with visual key indicators in `InputSection.tsx`.
+- Create new `EnterKeySvg.tsx` component for shortcut key visuals.
+- Add `updateSessionDetails` action to `sessionStore.ts` for faster session name updates via WebSocket.
+
+### Backend
+- Add `--cowboy-mode` flag with server warning confirmation in `__main__.py`.
+- Adjust console output padding in `console/formatting.py` and `console/output.py`.
+- Refactor `research_notes_formatter.py` to return raw content.
+- Add model parameters for `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano` in `models_params.py`.
+- Update CIAYN agent prompts to mandate triple quotes for all string tool arguments in `prompts/ciayn_prompts.py`.
+- Broadcast full session details immediately after creation via WebSocket in `server/api_v1_spawn_agent.py`.
+
+### Build
+- Update prebuilt frontend assets (`index-*.js`, `index-*.css`, `index.html`).
+
 ## [0.25.0] 2025-04-09
 
 ### Backend Changes
