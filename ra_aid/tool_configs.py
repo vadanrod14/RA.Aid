@@ -132,11 +132,11 @@ def get_read_only_tools(
         List of tool functions
     """
     tools = [
-        emit_key_snippet,
         # Only include emit_related_files if use_aider is True
         *([emit_related_files] if use_aider else []),
-        emit_key_facts,
         # *TEMPORARILY* disabled to improve tool calling perf.
+        # emit_key_snippet,
+        # emit_key_facts,
         # delete_key_facts,
         # delete_key_snippets,
         # deregister_related_files,
@@ -352,8 +352,8 @@ def get_chat_tools(expert_enabled: bool = True, web_research_enabled: bool = Fal
         ask_human,
         request_research,
         request_research_and_implementation,
-        emit_key_facts,
         # *TEMPORARILY* disabled to improve tool calling perf.
+        # emit_key_facts,
         # delete_key_facts,
         # delete_key_snippets,
         # deregister_related_files,

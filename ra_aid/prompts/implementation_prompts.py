@@ -17,14 +17,6 @@ Working Directory: {working_directory}
 {project_info}
 </project info>
 
-<key facts>
-{key_facts}
-</key facts>
-
-<key snippets>
-{key_snippets}
-</key snippets>
-
 <relevant files>
 {related_files}
 </relevant files>

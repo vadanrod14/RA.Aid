@@ -15,14 +15,6 @@ from ra_aid.prompts.web_research_prompts import WEB_RESEARCH_PROMPT_SECTION_RESE
 RESEARCH_COMMON_PROMPT_HEADER = """Current Date: {current_date}
 
 <previous research>
-<key facts>
-{key_facts}
-</key facts>
-
-<relevant code snippets>
-{key_snippets}
-</relevant code snippets>
-
 <related files>
 {related_files}
 </related files>
@@ -67,8 +59,6 @@ You must:
     Describe what exists in these files (file names, directory structures, documentation found, code patterns, dependencies).
     Do so by incrementally and systematically exploring the filesystem with careful directory listing tool calls.
     Use rg via run_shell_command extensively to do *exhaustive* searches for all references to anything that might be changed as part of the base level task.
-    Call emit_key_facts and emit_key_snippet on key information/facts/snippets of code you discover about this project during your research. This is information you will be writing down to be able to efficiently complete work in the future, so be on the lookout for these and make it count.
-    While it is important to emit key facts and snippets, only emit ones that are truly important info about the project or this task. Do not excessively emit key facts or snippets. Be strategic about it.
 
 You must not:
 
@@ -130,10 +120,8 @@ If you find this is an empty directory, you can stop research immediately and as
     - Missing related files spanning modules or parts of the monorepo.
     - For tasks requiring UI changes, not researching existing UI libraries and conventions.
     - Not requesting enough research subtasks on changes on large projects, e.g. to discover testing or UI conventions, etc.
-    - Not finding *examples* of how to do similar things in the current codebase and calling emit_key_snippet to report them.
     - Not finding unit tests because they are in slightly different locations than expected.
     - Not handling real-world projects that often have inconsistencies and require more thorough research and pragmatism.
-    - Not finding *ALL* related files and snippets. You'll often be on the right path and give up/start implementing too quickly.
     - Not calling tools/functions properly, e.g. leaving off required arguments, calling a tool in a loop, calling tools inappropriately.
     - Doing redundant research and taking way more steps than necessary.
     - Announcing every little thing as you do it.
@@ -157,7 +145,7 @@ When necessary, emit research subtasks.
 
 {research_only_note}
 
-If there are existing relevant unit tests/test suites, you must run them *during the research stage*, before editing anything, using run_shell_command to get a baseline about passing/failing tests and call emit_key_facts with key facts about the tests and whether they were passing when you started. This ensures a proper baseline is established before any changes.
+If there are existing relevant unit tests/test suites, you must run them *during the research stage*, before editing anything, using run_shell_command to get a baseline about passing/failing tests and call emit_research_notes with key facts about the tests and whether they were passing when you started. This ensures a proper baseline is established before any changes.
 
 Objective
     Investigate and understand the codebase as it relates to the query.

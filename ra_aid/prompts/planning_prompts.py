@@ -21,14 +21,6 @@ KEEP IT SIMPLE
 {research_notes}
 </research notes>
 
-<key facts>
-{key_facts}
-</key facts>
-
-<key snippets>
-{key_snippets}
-</key snippets>
-
 <environment inventory>
 {env_inv}
 </environment inventory>
