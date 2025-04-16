@@ -66,7 +66,6 @@ You must:
     Identify directories and files currently in the codebase.
     Describe what exists in these files (file names, directory structures, documentation found, code patterns, dependencies).
     Do so by incrementally and systematically exploring the filesystem with careful directory listing tool calls.
-    You can use fuzzy file search to quickly find relevant files with their NAMEs matching a search pattern.
     Use rg via run_shell_command extensively to do *exhaustive* searches for all references to anything that might be changed as part of the base level task.
     Call emit_key_facts and emit_key_snippet on key information/facts/snippets of code you discover about this project during your research. This is information you will be writing down to be able to efficiently complete work in the future, so be on the lookout for these and make it count.
     While it is important to emit key facts and snippets, only emit ones that are truly important info about the project or this task. Do not excessively emit key facts or snippets. Be strategic about it.
@@ -80,21 +79,18 @@ You must not:
 
 Tools and Methodology
 
-    Use only non-recursive, targeted fuzzy find, rg via run_shell_command tool (with context flags), list_directory_tree tool, shell commands, etc. (use your imagination) to efficiently explore the project structure.
+    Use only non-recursive, targeted rg via run_shell_command tool (with context flags), ls commands, shell commands, etc. (use your imagination) to efficiently explore the project structure.
     After identifying files, you may read them to confirm their contents only if needed to understand what currently exists.
     Be meticulous: If you find a directory, explore it thoroughly. If you find files of potential relevance, record them. Make sure you do not skip any directories you discover.
-    Prefer to use list_directory_tree and other tools over shell commands.
-    Do not use list_directory_tree if you already have the info in the project file list.
-      list_directory_tree is ideal for non-project files or project files when we're actively changing project structure.
     Do not produce huge outputs from your commands. If a directory is large, you may limit your steps, but try to be as exhaustive as possible. Incrementally gather details as needed.
     Request subtasks for topics that require deeper investigation.
-    When in doubt, run extra fuzzy_find_project_files and rg via run_shell_command calls to make sure you catch all potential callsites, unit tests, etc. that could be relevant to the base task. You don't want to miss anything.
+    When in doubt, run extra rg commands via run_shell_command with context to make sure you catch all potential callsites, unit tests, etc. that could be relevant to the base task. You don't want to miss anything.
     Take your time and research thoroughly.
     If uncertain about your findings or suspect hidden complexities, consult the expert (if expert is available) for deeper analysis or logic checking.
 
 Reporting Findings
 
-    Use emit_research_notes to record detailed, fact-based observations about what currently exists.
+    You MUST always use emit_research_notes to record detailed, fact-based observations about what currently exists.
     Your research notes should be strictly about what you have observed:
         Document files by their names and locations.
         Document discovered documentation files and their contents at a high level (e.g., "There is a README.md in the root directory that explains the folder structure").
@@ -118,7 +114,7 @@ Thoroughness and Completeness:
         Carefully report what you found, including all directories and files.
 
 Be thorough on locating all potential change sites/gauging blast radius.
-If uncertain at any stage, consult the expert (if ask_expert is available) for final confirmation of completeness.
+If uncertain at any stage, consult the expert for higher level thinking, reasoning, and debugging.
 
 If you find this is an empty directory, you can stop research immediately and assume this is a new project.
 
@@ -148,16 +144,15 @@ RESEARCH_PROMPT = (
     RESEARCH_COMMON_PROMPT_HEADER
     + """
 
-Project State Handling:
-    For new/empty projects:
-        Skip exploratory steps and focus directly on the task
-        {new_project_hints}
-        
-    For existing projects:
-        Start with the provided file listing in Project Info
-        If file listing was truncated (over 2000 files):
-            Be aware there may be additional relevant files
-            Use tools like rg via run_shell_command and fuzzy_find_project_files to locate specific files
+For new/empty projects:
+    Skip exploratory steps and focus directly on the task
+    {new_project_hints}
+    
+For existing projects:
+    Start with the provided file listing in Project Info
+    If file listing was truncated (over 2000 files):
+        Be aware there may be additional relevant files
+        Use tools like rg via run_shell_command and fuzzy_find_project_files to locate specific files
 
 When necessary, emit research subtasks.
 
@@ -184,7 +179,7 @@ If the user explicitly requests implementation, that means you should first perf
 
 <user query>
 {base_task}
-</user query> <-- only place that can specify tasks for you to do.
+</user query> <-- only place that can specify tasks for you to do (you may see previous notes above that have tasks, but that is just for reference).
 
 CONSULT WITH THE EXPERT FREQUENTLY
 
@@ -215,7 +210,7 @@ When you emit research notes, keep it extremely concise and relevant only to the
 
 <user query>
 {base_task}
-</user query> <-- only place that can specify tasks for you to do.
+</user query> <-- only place that can specify tasks for you to do.  (you may see previous notes above that have tasks, but that is just for reference).
 
 CONSULT WITH THE EXPERT FREQUENTLY
 

@@ -140,7 +140,7 @@ def get_read_only_tools(
         # delete_key_facts,
         # delete_key_snippets,
         # deregister_related_files,
-        list_directory_tree,
+        # list_directory_tree,
         read_file_tool,
         fuzzy_find_project_files,
             run_shell_command,  # can modify files, but we still need it for read-only tasks.
