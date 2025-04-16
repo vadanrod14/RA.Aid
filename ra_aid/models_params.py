@@ -106,7 +106,7 @@ models_params = {
             "default_temperature": 1.0,
             "supports_reasoning_effort": True,
             "latency_coefficient": DEFAULT_BASE_LATENCY,
-            "default_backend": AgentBackendType.CREATE_REACT_AGENT,
+            "default_backend": AgentBackendType.CIAYN,
         },
         "gpt-4.1": {
             "token_limit": 1000000,
