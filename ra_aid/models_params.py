@@ -92,6 +92,22 @@ models_params = {
             "token_limit": 128000,
             "default_backend": AgentBackendType.CIAYN,
         },
+        "o4-mini": {
+            "token_limit": 200000,
+            "supports_temperature": False,
+            "default_temperature": 1.0,
+            "supports_reasoning_effort": True,
+            "latency_coefficient": DEFAULT_BASE_LATENCY,
+            "default_backend": AgentBackendType.CREATE_REACT_AGENT,
+        },
+        "o3": {
+            "token_limit": 200000,
+            "supports_temperature": False,
+            "default_temperature": 1.0,
+            "supports_reasoning_effort": True,
+            "latency_coefficient": DEFAULT_BASE_LATENCY,
+            "default_backend": AgentBackendType.CREATE_REACT_AGENT,
+        },
         "gpt-4.1": {
             "token_limit": 1000000,
             "supports_temperature": True,
