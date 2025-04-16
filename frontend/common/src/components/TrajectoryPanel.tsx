@@ -14,7 +14,8 @@ import {
   FuzzyFindTrajectory, // <-- Import the new FuzzyFindTrajectory component
   TaskCompletedTrajectory, // <-- Import the new TaskCompletedTrajectory component
   PlanCompletedTrajectory,
-  FileWriteTrajectory // <-- Import the new FileWriteTrajectory component
+  FileWriteTrajectory, // <-- Import the new FileWriteTrajectory component
+  FileStrReplaceTrajectory // <-- Import the new FileStrReplaceTrajectory component
 } from './trajectories';
 import { useTrajectoryStore, useSessionStore } from '../store'; // <-- Import useSessionStore
 import { Trajectory } from '../models/trajectory';
@@ -142,6 +143,9 @@ export const TrajectoryPanel: React.FC<TrajectoryPanelProps> = ({
         break;
       case 'file_write': // <-- Add case for file_write
         component = <FileWriteTrajectory key={trajectory.id} trajectory={trajectory} />;
+        break;
+      case 'file_str_replace': // <-- Add case for file_str_replace
+        component = <FileStrReplaceTrajectory key={trajectory.id} trajectory={trajectory} />;
         break;
       case 'ripgrep_search': // Add case for ripgrep_search
         component = <RipgrepSearchTrajectory key={trajectory.id} trajectory={trajectory} />;

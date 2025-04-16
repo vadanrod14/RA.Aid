@@ -13,3 +13,4 @@ export * from './FuzzyFindTrajectory'; // Added export for the new component
 export * from './TaskCompletedTrajectory'; // Added export for task completion
 export * from './PlanCompletedTrajectory'; // Added export for plan completion
 export * from './FileWriteTrajectory'; // Added export for file write
+export * from './FileStrReplaceTrajectory'; // Added export for file string replace
