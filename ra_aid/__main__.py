@@ -250,7 +250,7 @@ def launch_server(host: str, port: int, args):
 
 def parse_arguments(args=None):
     ANTHROPIC_DEFAULT_MODEL = DEFAULT_MODEL
-    OPENAI_DEFAULT_MODEL = "gpt-4o"
+    OPENAI_DEFAULT_MODEL = "o4-mini"
 
     # Case-insensitive log level argument type
     def log_level_type(value):
@@ -299,11 +299,7 @@ Examples:
         default=(
             "gemini"
             if os.getenv("GEMINI_API_KEY")
-            else (
-                "openai"
-                if (os.getenv("OPENAI_API_KEY") and not os.getenv("ANTHROPIC_API_KEY"))
-                else "anthropic"
-            )
+            else ("openai" if os.getenv("OPENAI_API_KEY") else "anthropic")
         ),
         choices=VALID_PROVIDERS,
         help="The LLM provider to use",
@@ -537,22 +533,30 @@ Examples:
 
     # Handle expert provider/model defaults
     if not parsed_args.expert_provider:
-        # Check for Gemini API key first
-        if os.environ.get("GEMINI_API_KEY"):
-            parsed_args.expert_provider = "gemini"
-            parsed_args.expert_model = "gemini-2.5-pro-preview-03-25"
-        # Check for OpenAI API key next
-        elif os.environ.get("OPENAI_API_KEY"):
+        # Priority: OpenAI -> Gemini -> Anthropic -> DeepSeek -> Main Provider
+        if os.environ.get("EXPERT_OPENAI_API_KEY"):
             parsed_args.expert_provider = "openai"
-            parsed_args.expert_model = None  # Will be auto-selected
-        # If no OpenAI key but DeepSeek key exists, use DeepSeek
-        elif os.environ.get("DEEPSEEK_API_KEY"):
+            parsed_args.expert_model = None  # Will be auto-selected later
+        elif os.environ.get("GEMINI_API_KEY"): # Check main Gemini key as fallback
+            parsed_args.expert_provider = "gemini"
+            # Use gemini-2.5-pro if not specified, matching main model default
+            parsed_args.expert_model = parsed_args.expert_model or "gemini-2.5-pro-preview-03-25"
+        elif os.environ.get("EXPERT_ANTHROPIC_API_KEY"):
+             parsed_args.expert_provider = "anthropic"
+             # Use main anthropic model if expert model not specified
+             parsed_args.expert_model = parsed_args.expert_model or ANTHROPIC_DEFAULT_MODEL
+        elif os.environ.get("DEEPSEEK_API_KEY"): # Check main Deepseek key as fallback
             parsed_args.expert_provider = "deepseek"
-            parsed_args.expert_model = "deepseek-reasoner"
+            parsed_args.expert_model = "deepseek-reasoner" # Specific default for Deepseek expert
         else:
-            # Fall back to main provider if neither is available
-            parsed_args.expert_provider = parsed_args.provider
-            parsed_args.expert_model = parsed_args.model
+            # Fall back to main provider if none of the prioritized keys are found
+            # Special-case OpenAI: we want to use the provider but let later logic choose the best model.
+            if parsed_args.provider == "openai":
+                parsed_args.expert_provider = "openai"
+                parsed_args.expert_model = None  # trigger auto-selection later (prefer o3)
+            else:
+                parsed_args.expert_provider = parsed_args.provider
+                parsed_args.expert_model = parsed_args.model
 
     # Validate temperature range if provided
     if parsed_args.temperature is not None and not (
