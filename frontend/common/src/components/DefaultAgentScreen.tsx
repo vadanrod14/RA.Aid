@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { PanelLeft, Plus } from 'lucide-react';
@@ -44,6 +45,11 @@ export const DefaultAgentScreen: React.FC = () => {
   // Refs and state for autoscroll
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState<boolean>(false);
+  const isUserScrolledUpRef = useRef<boolean>(false); // Ref to keep latest value across effects
+
+  // Scroll behaviour threshold (in pixels)
+  const BOTTOM_THRESHOLD = 10;     // Considered back at bottom when within this distance / threshold for scroll up
+
 
   // WebSocket connection management
   const wsConnectionRef = useRef<WebSocketConnection | null>(null);
@@ -151,6 +157,11 @@ export const DefaultAgentScreen: React.FC = () => {
     setIsDarkTheme(isDark);
   }, []);
 
+  // Keep ref in sync with state
+  useEffect(() => {
+    isUserScrolledUpRef.current = isUserScrolledUp;
+  }, [isUserScrolledUp]);
+
   // Close drawer when window resizes to desktop width
   useEffect(() => {
     const handleResize = () => {
@@ -164,56 +175,55 @@ export const DefaultAgentScreen: React.FC = () => {
 
   // Autoscroll Effect: Scrolls down when new trajectories arrive and user hasn't scrolled up
   useEffect(() => {
-    if (scrollContainerRef.current && !isUserScrolledUp) {
-      const element = scrollContainerRef.current;
-      element.scrollTop = element.scrollHeight;
-      console.log('[DefaultAgentScreen] Autoscroll triggered');
-    }
-  }, [trajectories, isUserScrolledUp]); // Dependency: run when trajectories change or scroll state changes
+    const element = scrollContainerRef.current;
+    if (!element) return;
 
-  // Scroll Event Listener Effect: Detects manual scrolling
+    // Autoscroll debug log removed
+
+    if (!isUserScrolledUpRef.current) {
+      element.scrollTo({ top: element.scrollHeight, behavior: "smooth" });
+    }
+  }, [trajectories]); // Only run when new trajectories arrive
+
+  // Scroll Event Listener Effect: Detects manual scrolling and toggles autoscroll
   useEffect(() => {
     const handleScroll = () => {
       const element = scrollContainerRef.current;
       if (!element) return;
 
-      const scrollThreshold = 50; // Pixels threshold to consider user scrolled up significantly
-      const bottomThreshold = 10; // Pixels threshold to consider user back at bottom
+      const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
 
-      const isAtBottom = element.scrollHeight - element.scrollTop - element.clientHeight < bottomThreshold;
+      // Scroll debug log removed
 
-      if (isAtBottom) {
-        if (isUserScrolledUp) { // Only update state if it changes
-            console.log('[DefaultAgentScreen] Scrolled back to bottom, enabling autoscroll');
-            setIsUserScrolledUp(false);
+      if (distanceFromBottom > BOTTOM_THRESHOLD) {
+        if (!isUserScrolledUpRef.current) {
+          console.log('[DefaultAgentScreen] User scrolled up – autoscroll disabled');
+          isUserScrolledUpRef.current = true;
+          setIsUserScrolledUp(true);
         }
       } else {
-        const scrolledUpAmount = element.scrollTop; // Check how far from the top
-        // If user has scrolled up noticeably (more than the threshold from the top)
-        // OR if the distance from bottom is greater than the threshold (more robust check)
-        if (scrolledUpAmount > scrollThreshold || (element.scrollHeight - element.scrollTop - element.clientHeight > scrollThreshold)) {
-            if (!isUserScrolledUp) { // Only update state if it changes
-                console.log('[DefaultAgentScreen] User scrolled up, disabling autoscroll');
-                setIsUserScrolledUp(true);
-            }
+        if (isUserScrolledUpRef.current) {
+          console.log('[DefaultAgentScreen] Back at bottom – autoscroll enabled');
+          isUserScrolledUpRef.current = false;
+          setIsUserScrolledUp(false);
         }
       }
     };
 
     const element = scrollContainerRef.current;
     if (element) {
-      element.addEventListener('scroll', handleScroll, { passive: true }); // Use passive listener for performance
-      console.log('[DefaultAgentScreen] Scroll listener added');
+      element.addEventListener('scroll', handleScroll, { passive: true });
+      // Scroll listener added log removed
     }
 
     // Cleanup function
     return () => {
       if (element) {
         element.removeEventListener('scroll', handleScroll);
-        console.log('[DefaultAgentScreen] Scroll listener removed');
+        // Scroll listener removed log removed
       }
     };
-  }, [isUserScrolledUp]); // Re-attach listener if isUserScrolledUp changes (though ideally not needed often)
+  }, []); // Attach listener once on mount
 
   // --- Ctrl+Space Shortcut Implementation ---
   useEffect(() => {
