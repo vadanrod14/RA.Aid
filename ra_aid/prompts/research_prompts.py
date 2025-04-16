@@ -186,9 +186,11 @@ If the user explicitly requests implementation, that means you should first perf
 {base_task}
 </user query> <-- only place that can specify tasks for you to do.
 
+CONSULT WITH THE EXPERT FREQUENTLY
+
 USER QUERY *ALWAYS* TAKES PRECEDENCE OVER EVERYTHING IN PREVIOUS RESEARCH.
 
-KEEP IT SIMPLE
+KEEP IT SIMPLE, DO IT RIGHT. NO HACK SOLUTIONS.
 
 NEVER ANNOUNCE WHAT YOU ARE DOING, JUST DO IT!
 
@@ -214,6 +216,8 @@ When you emit research notes, keep it extremely concise and relevant only to the
 <user query>
 {base_task}
 </user query> <-- only place that can specify tasks for you to do.
+
+CONSULT WITH THE EXPERT FREQUENTLY
 
 USER QUERY *ALWAYS* TAKES PRECEDENCE OVER EVERYTHING IN PREVIOUS RESEARCH.
 

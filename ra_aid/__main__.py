@@ -53,6 +53,7 @@ from ra_aid.database.repositories.session_repository import SessionRepositoryMan
 from ra_aid.database.repositories.related_files_repository import (
     RelatedFilesRepositoryManager,
 )
+
 from ra_aid.database.repositories.work_log_repository import WorkLogRepositoryManager
 from ra_aid.database.repositories.config_repository import (
     ConfigRepositoryManager,
@@ -533,28 +534,39 @@ Examples:
 
     # Handle expert provider/model defaults
     if not parsed_args.expert_provider:
-        # Priority: OpenAI -> Gemini -> Anthropic -> DeepSeek -> Main Provider
+        # Priority: Explicit EXPERT_* -> Both Gemini/OpenAI -> Gemini -> Anthropic Expert -> DeepSeek -> Main Provider Fallback
         if os.environ.get("EXPERT_OPENAI_API_KEY"):
             parsed_args.expert_provider = "openai"
             parsed_args.expert_model = None  # Will be auto-selected later
-        elif os.environ.get("GEMINI_API_KEY"): # Check main Gemini key as fallback
-            parsed_args.expert_provider = "gemini"
-            # Use gemini-2.5-pro if not specified, matching main model default
-            parsed_args.expert_model = parsed_args.expert_model or "gemini-2.5-pro-preview-03-25"
         elif os.environ.get("EXPERT_ANTHROPIC_API_KEY"):
              parsed_args.expert_provider = "anthropic"
              # Use main anthropic model if expert model not specified
              parsed_args.expert_model = parsed_args.expert_model or ANTHROPIC_DEFAULT_MODEL
+        # Add other explicit EXPERT_* checks here if needed in the future...
+
+        # NEW: Check if both base Gemini and OpenAI keys are present (and no specific EXPERT_* key was found)
+        elif os.environ.get("GEMINI_API_KEY") and os.environ.get("OPENAI_API_KEY"):
+            # Both keys present, default main to Gemini (already done) and expert to OpenAI
+            parsed_args.expert_provider = "openai"
+            # Let llm.py auto-select 'o3' unless user specified --expert-model
+            parsed_args.expert_model = parsed_args.expert_model or None
+
+        # Fallback checks for individual base keys (if the combined check didn't match or only one key exists)
+        elif os.environ.get("GEMINI_API_KEY"): # Check main Gemini key as fallback
+            parsed_args.expert_provider = "gemini"
+            # Use gemini-2.5-pro if not specified, matching main model default
+            parsed_args.expert_model = parsed_args.expert_model or "gemini-2.5-pro-preview-03-25"
         elif os.environ.get("DEEPSEEK_API_KEY"): # Check main Deepseek key as fallback
             parsed_args.expert_provider = "deepseek"
             parsed_args.expert_model = "deepseek-reasoner" # Specific default for Deepseek expert
         else:
-            # Fall back to main provider if none of the prioritized keys are found
-            # Special-case OpenAI: we want to use the provider but let later logic choose the best model.
+            # Final Fallback: Use main provider settings if none of the above conditions met
+            # Special-case OpenAI main provider: we want to use the provider but let later logic choose the best expert model.
             if parsed_args.provider == "openai":
                 parsed_args.expert_provider = "openai"
                 parsed_args.expert_model = None  # trigger auto-selection later (prefer o3)
             else:
+                # For other main providers, use their settings as the expert fallback
                 parsed_args.expert_provider = parsed_args.provider
                 parsed_args.expert_model = parsed_args.model
 
