@@ -12,6 +12,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
+from rich.prompt import Confirm
 
 from ra_aid import print_error, print_stage_header
 from ra_aid.__version__ import __version__
@@ -240,6 +241,7 @@ def launch_server(host: str, port: int, args):
                 "show_cost": args.show_cost,
                 "force_reasoning_assistance": args.reasoning_assistance,
                 "disable_reasoning_assistance": args.no_reasoning_assistance,
+                "cowboy_mode": args.cowboy_mode,
             }
         )
 
@@ -747,6 +749,14 @@ def main():
 
     # Launch web interface if requested
     if args.server:
+        if args.cowboy_mode:
+            if not Confirm.ask(
+                "WARNING: Running in server mode with cowboy mode enabled allows the Web UI " \
+                "to execute shell commands without confirmation. Continue?", default=False
+            ):
+                print("Exiting due to user cancellation.")
+                sys.exit(0)
+
         launch_server(args.server_host, args.server_port, args)
         return
 
@@ -863,6 +873,7 @@ def main():
                 config_repo.set(
                     "custom_tools_enabled", True if args.custom_tools else False
                 )
+                config_repo.set("cowboy_mode", args.cowboy_mode) # Also add here for non-server mode
 
                 # Validate custom tools function signatures
                 get_custom_tools()
@@ -989,6 +1000,7 @@ def main():
                     config_repo.set(
                         "disable_reasoning_assistance", args.no_reasoning_assistance
                     )
+                    config_repo.set("cowboy_mode", args.cowboy_mode) # Chat mode also needs cowboy mode
 
                     # Set modification tools based on use_aider flag
                     set_modification_tools(args.use_aider)
@@ -1126,6 +1138,8 @@ def main():
                 config_repo.set(
                     "disable_reasoning_assistance", args.no_reasoning_assistance
                 )
+                # Store cowboy_mode for the main agent run
+                config_repo.set("cowboy_mode", args.cowboy_mode)
 
                 # Set modification tools based on use_aider flag
                 set_modification_tools(args.use_aider)
