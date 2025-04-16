@@ -110,8 +110,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
   };
 
   // Handle research-only submissions
-  const handleResearchOnlySubmit = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleResearchOnlySubmit = async (e?: React.MouseEvent | React.KeyboardEvent) => { // Accept KeyboardEvent too
+    if (e) e.preventDefault();
 
     if (!message.trim() || !isNewSession || !newSession) return;
 
@@ -128,7 +128,15 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   // --- Ctrl+Enter Shortcut Handler ---
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Check for Ctrl+Enter
+    // Check for Ctrl+Shift+Enter for research-only submission
+    if (event.ctrlKey && event.shiftKey && event.code === 'Enter') {
+      if (!message.trim() || isSubmitting || !isNewSession) return; // Prevent empty/duplicate submission/outside new session
+      event.preventDefault(); // Prevent default textarea behavior (newline)
+      handleResearchOnlySubmit(event as any); // Trigger the research-only action
+      return; // Stop further processing in this handler
+    }
+
+    // Check for Ctrl+Enter for regular submission
     if (event.ctrlKey && event.code === 'Enter') { // Use event.code for reliability
       event.preventDefault(); // Prevent default textarea behavior (e.g., new line)
       // Trigger submit only if not already submitting and message has content
@@ -185,7 +193,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               disabled={isSubmitting}
             />
             {isNewSession ? (
-              <div className="flex items-center space-x-2 px-3 py-2 border-t border-border/30">
+              <div className="flex items-center justify-end space-x-2 px-3 py-2 border-t border-border/30">{/* Changed justify-end */}
                 <Button
                   type="button"
                   variant="outline"
@@ -201,13 +209,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
                       <span className="sm:hidden">Processing</span>
                     </span>
                   ) : (
-                    <>
-                      <span className="hidden sm:inline">Research Only</span>
-                      <span className="sm:hidden">Research</span>
-                    </>
+                    <span className="flex items-center justify-center">
+                      <span className="hidden sm:inline -mt-0.5">Research Only</span>
+                      <span className="sm:hidden -mt-0.5">Research</span>
+                      <span className="flex items-center justify-around ml-4 border rounded">
+                        <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
+                          <strong>Ctrl</strong>
+                        </kbd>
+                        <span className="mx-0 -mt-1">+</span>
+                         <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
+                          <strong>Shift</strong>
+                        </kbd>
+                        <span className="mx-0 -mt-1">+</span>
+                        <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
+                          <EnterKeySvg className="h-3 w-4" />
+                        </kbd>
+                      </span>
+                    </span>
                   )}
                 </Button>
-                <div className="flex-1"></div>
+                {/* Removed the <div className="flex-1"></div> spacer */}
                 <Button
                   type="submit"
                   disabled={!message.trim() || isSubmitting}
@@ -230,7 +251,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
                           <strong>Ctrl</strong>
                         </kbd>
                         <span className="mx-0 -mt-1">+</span>
-
                         <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
                           <EnterKeySvg className="h-3 w-4" />
                         </kbd>
