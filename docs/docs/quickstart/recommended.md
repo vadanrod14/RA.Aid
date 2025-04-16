@@ -21,7 +21,7 @@ To use RA.Aid with the recommended configuration, you'll need to obtain the foll
 
 You might also consider keys for other services if you want to explicitly configure different models or providers:
 
-2.  **OpenAI API Key** (Optional): Create an account at [OpenAI's platform](https://platform.openai.com) and generate an API key. Useful if you want to use OpenAI models, perhaps for the expert model specifically (see [Expert Model Configuration](../configuration/expert-model.md)).
+2.  **OpenAI API Key** (Optional): Create an account at [OpenAI's platform](https://platform.openai.com) and generate an API key. Useful if you want to use OpenAI models, perhaps for the expert model specifically (see [Expert Model Configuration](/configuration/expert-model.md)).
 3.  **Anthropic API Key** (Optional): Sign up at [Anthropic's Console](https://console.anthropic.com) and generate an API key. Useful if you prefer Anthropic models.
 4.  **Tavily API Key** (Optional): Create an account at [Tavily](https://app.tavily.com/sign-in) and get your API key for web search capabilities.
 
@@ -54,7 +54,7 @@ export ANTHROPIC_API_KEY='your_anthropic_api_key'
 # etc.
 ```
 
-RA.Aid will automatically detect the available keys and select the default provider. If only `GEMINI_API_KEY` is set, it will use the `gemini` provider and the `gemini-2.5-pro-preview-03-25` model. See [Configuration Overview](../configuration/) for more details on provider selection.
+RA.Aid will automatically detect the available keys and select the default provider. If only `GEMINI_API_KEY` is set, it will use the `gemini` provider and the `gemini-2.5-pro-preview-03-25` model.
 
 ## Basic Usage
 
