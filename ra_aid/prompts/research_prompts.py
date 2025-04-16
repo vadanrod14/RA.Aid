@@ -107,7 +107,7 @@ No Planning or Problem-Solving
 You must remain strictly within the bounds of describing what currently exists.
 
 Thoroughness and Completeness:
-        Use tools like rg via run_shell_command and fuzzy_find_project_files to locate specific files
+        Use tools like rg via run_shell_command to locate specific files
         
         When you find related files, search for files related to those that could be affected, and so on, until you're sure you've gone deep enough. Err on the side of going too deep.
         Continue this process until you have discovered all directories and files at all levels.
@@ -152,7 +152,6 @@ For existing projects:
     Start with the provided file listing in Project Info
     If file listing was truncated (over 2000 files):
         Be aware there may be additional relevant files
-        Use tools like rg via run_shell_command and fuzzy_find_project_files to locate specific files
 
 When necessary, emit research subtasks.
 
