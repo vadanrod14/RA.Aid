@@ -14,7 +14,7 @@ import { BackendTrajectory, safeBackendToTrajectory } from '../models/trajectory
 import { WebSocketConnection, WebSocketConfig } from '../websocket/connection';
 import logoBlack from '../assets/logo-black-transparent.png';
 import logoWhite from '../assets/logo-white-transparent.gif';
-import { AgentSession, SessionStatus, safeBackendToAgentSession } from '../models/session'; // <-- Import AgentSession and safeBackendToAgentSession
+import { AgentSession, SessionStatus, safeBackendToAgentSession } from '../models/session';
 
 // Helper function for theme setup
 const setupTheme = () => {
@@ -128,7 +128,7 @@ export const DefaultAgentScreen: React.FC = () => {
     };
   }, [host, port, handleWebSocketMessage]);
 
-  // Get session store data
+  // Get session store data needed for this component
   const {
     sessions,
     selectedSessionId,
@@ -137,7 +137,7 @@ export const DefaultAgentScreen: React.FC = () => {
     isLoading,
     error,
     newSession,
-    startNewSession,
+    startNewSession, // <-- Get startNewSession
   } = useSessionStore();
 
   // Fetch initial sessions on component mount
@@ -215,6 +215,26 @@ export const DefaultAgentScreen: React.FC = () => {
     };
   }, [isUserScrolledUp]); // Re-attach listener if isUserScrolledUp changes (though ideally not needed often)
 
+  // --- Ctrl+Space Shortcut Implementation ---
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.code === 'Space') {
+        event.preventDefault(); // Prevent default browser space action
+        console.log('Ctrl+Space pressed, starting new session');
+        startNewSession();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    console.log('[DefaultAgentScreen] Ctrl+Space listener added');
+
+    // Cleanup function
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      console.log('[DefaultAgentScreen] Ctrl+Space listener removed');
+    };
+  }, [startNewSession]); // Add startNewSession as dependency
+
 
   // Handle session selection - Accepts number
   const handleSessionSelect = (sessionId: number) => {
@@ -234,8 +254,9 @@ export const DefaultAgentScreen: React.FC = () => {
     localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
   };
 
-  // Get selected session name
+  // --- Determine selected session and completion status ---
   const selectedSession = sessions.find(s => s.id === selectedSessionId);
+  const isCompleted = selectedSession?.status === 'completed';
   const sessionName = selectedSession?.name || 'Unknown'; // Rely on the session name from the store
 
   // Render header content
@@ -310,6 +331,11 @@ export const DefaultAgentScreen: React.FC = () => {
           customClassName="px-6 pt-3 pb-4" // Reduced top padding to minimize gap
         />
       </div>
+      {isCompleted && (
+        <div className="text-center py-4 text-muted-foreground border-t border-border/30"> {/* Added border-t */}
+          All done! Press <kbd className="px-1.5 py-0.5 border rounded bg-muted font-mono text-xs">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 border rounded bg-muted font-mono text-xs">Space</kbd> to start a new session.
+        </div>
+      )}
       {/* Input section for existing session (if needed) */}
       {/* <InputSection onSubmit={handleSubmit} /> */}
     </div>

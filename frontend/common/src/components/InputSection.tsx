@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import { Send, X } from "lucide-react";
 import { cn } from "../utils";
 import { useSessionStore } from "../store";
+import { EnterKeySvg } from './ui/EnterKeySvg';
 
 interface InputSectionProps {
   sessionId?: number;
@@ -12,7 +14,7 @@ interface InputSectionProps {
   isNewSession?: boolean; // Prop to indicate if this is for a new session
 }
 
-export const InputSection: React.FC<InputSectionProps> = ({ 
+export const InputSection: React.FC<InputSectionProps> = ({
   sessionId,
   onSubmit,
   className,
@@ -23,34 +25,35 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null); // Ref for the textarea
-  
+  const formRef = useRef<HTMLFormElement>(null);
+
   // Get session store state and actions for new session handling
-  const { 
-    newSession, 
+  const {
+    newSession,
     updateNewSessionMessage,
     submitNewSession,
     cancelNewSession
   } = useSessionStore();
-  
+
   // Sync local message state with newSession message when in new session mode
   useEffect(() => {
     if (isNewSession && newSession) {
       setMessage(newSession.message);
     }
   }, [isNewSession, newSession]);
-  
+
   // Check for mobile screen size on client-side only
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     // Initial check
     checkMobile();
-    
+
     // Add event listener for resize
     window.addEventListener('resize', checkMobile);
-    
+
     // Cleanup
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -61,20 +64,25 @@ export const InputSection: React.FC<InputSectionProps> = ({
       textareaRef.current.focus();
     }
   }, [isNewSession]); // Dependency: only run when isNewSession changes
-  
+
   // If no sessionId is provided and not in new session mode, or drawer is open on mobile, don't render
   // Also, don't render if we're in new session mode but the newSession state is submitting
-  if (!isNewSession || sessionId || (isDrawerOpen && isMobile) || (isNewSession && newSession?.isSubmitting)) {
-    return null;
+  // Adjusted logic: Should render if isNewSession is true, regardless of sessionId
+  if ((!isNewSession && !sessionId) || (isDrawerOpen && isMobile) || (isNewSession && newSession?.isSubmitting)) {
+      // Exception: if it *is* a new session, we *should* render it.
+      if (!isNewSession) {
+        return null;
+      }
   }
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+
+
+  const handleSubmit = async (e?: React.FormEvent) => { // Made event optional for direct calls
+    if (e) e.preventDefault(); // Prevent default only if event is passed
+
     if (!message.trim()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       if (isNewSession && newSession) {
         // For new sessions, update the message in the store and submit
@@ -104,11 +112,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
   // Handle research-only submissions
   const handleResearchOnlySubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
-    
+
     if (!message.trim() || !isNewSession || !newSession) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       updateNewSessionMessage(message);
       // Set research-only mode to true
@@ -118,14 +126,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
     }
   };
 
+  // --- Ctrl+Enter Shortcut Handler ---
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Check for Ctrl+Enter
+    if (event.ctrlKey && event.code === 'Enter') { // Use event.code for reliability
+      event.preventDefault(); // Prevent default textarea behavior (e.g., new line)
+      // Trigger submit only if not already submitting and message has content
+      if (!isSubmitting && message.trim()) {
+        handleSubmit(event as any); // Pass event as required by task description
+      }
+    }
+  };
+
   // New session can have different placeholder text and actions
-  const placeholder = isNewSession 
-    ? "What would you like help with today?" 
+  const placeholder = isNewSession
+    ? "What would you like help with today?"
     : "Type your message...";
-  
+
   return (
     <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-20 pointer-events-none md:left-[280px] lg:left-[320px] xl:left-[350px]", 
+      "fixed bottom-0 left-0 right-0 z-20 pointer-events-none md:left-[280px] lg:left-[320px] xl:left-[350px]",
       className
     )}>
       <div className="px-4 pb-4 pointer-events-none">
@@ -136,9 +156,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
               {newSession?.error && (
                 <div className="text-xs text-destructive max-w-[70%] truncate">{newSession.error}</div>
               )}
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={cancelNewSession}
                 className="h-7 w-7 p-0 flex-shrink-0"
                 disabled={isSubmitting}
@@ -147,7 +167,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               </Button>
             </div>
           )}
-          <form onSubmit={handleSubmit}>
+          <form ref={formRef} onSubmit={handleSubmit}>
             <textarea
               ref={textareaRef} // Attach the ref here
               value={message}
@@ -158,6 +178,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   updateNewSessionMessage(e.target.value);
                 }
               }}
+              onKeyDown={handleKeyDown} // <-- Add keydown handler
               placeholder={placeholder}
               className="flex w-full resize-none rounded-lg border-0 bg-transparent px-3 py-2 pr-12 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
               rows={isNewSession ? 4 : 3}
@@ -187,9 +208,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   )}
                 </Button>
                 <div className="flex-1"></div>
-                <Button 
-                  type="submit" 
-                  disabled={!message.trim() || isSubmitting} 
+                <Button
+                  type="submit"
+                  disabled={!message.trim() || isSubmitting}
                   variant="default"
                   size="sm"
                   className="text-xs h-8"
@@ -201,17 +222,27 @@ export const InputSection: React.FC<InputSectionProps> = ({
                       <span className="sm:hidden">Creating</span>
                     </span>
                   ) : (
-                    <>
-                      <span className="hidden sm:inline">Create Session</span>
-                      <span className="sm:hidden">Create</span>
-                    </>
+                    <span className="flex items-center justify-center">
+                      <span className="hidden sm:inline -mt-0.5">Create Session</span>
+                      <span className="sm:hidden -mt-0.5">Create</span>
+                      <span className="flex items-center justify-around ml-4 border rounded">
+                        <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
+                          <strong>Ctrl</strong>
+                        </kbd>
+                        <span className="mx-0 -mt-1">+</span>
+
+                        <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 font-mono text-xs">
+                          <EnterKeySvg className="h-3 w-4" />
+                        </kbd>
+                      </span>
+                    </span>
                   )}
                 </Button>
               </div>
             ) : (
-              <Button 
-                type="submit" 
-                disabled={!message.trim() || isSubmitting} 
+              <Button
+                type="submit"
+                disabled={!message.trim() || isSubmitting}
                 variant="ghost"
                 size="sm"
                 className="absolute bottom-1.5 right-1.5 h-9 w-9 rounded-md hover:bg-accent hover:text-accent-foreground"
