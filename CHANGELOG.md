@@ -1,3 +1,7 @@
+## [0.28.1] 2025-04-17
+
+- Update web prebuilt assets
+
 ## [0.28.0] 2025-04-17
 
 ### Documentation
