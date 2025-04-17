@@ -1,3 +1,31 @@
+## [0.28.0] 2025-04-17
+
+### Documentation
+- Updated expert model API key environment variables (`EXPERT_GEMINI_API_KEY`, `EXPERT_DEEPSEEK_API_KEY`) and clarified selection priority in `docs/docs/configuration/expert-model.md`.
+- Updated recommendation to Google Gemini 1.5 Pro as the primary default model in `docs/docs/intro.md` & `docs/docs/quickstart/recommended.md`, explaining automatic detection via `GEMINI_API_KEY`.
+
+### Frontend
+- Improved autoscroll logic in `frontend/common/src/components/DefaultAgentScreen.tsx`.
+- Added new trajectory visualization components for file modifications: `FileStrReplaceTrajectory.tsx` and `FileWriteTrajectory.tsx` in `frontend/common/src/components/trajectories/`.
+- Integrated new trajectory components into `frontend/common/src/components/TrajectoryPanel.tsx` and `frontend/common/src/components/trajectories/index.ts`.
+
+### Backend Core & Configuration
+- Refined expert model provider selection logic in `ra_aid/__main__.py` with updated priority order based on API keys.
+- Minor cleanup in `ra_aid/agent_backends/ciayn_agent.py` (removed unused import, refined fallback warning).
+- Set default backend for `o4-mini` to `CIAYN` in `ra_aid/models_params.py`.
+
+### Tools & Prompts
+- Added `file_str_replace` tool (`ra_aid/tools/file_str_replace.py`) for replacing strings in files.
+- Replaced `write_file_tool` with `put_complete_file_contents` tool (`ra_aid/tools/write_file.py`) for writing complete file content.
+- Updated `read_file_tool` (`ra_aid/tools/read_file.py`) to strip whitespace from filepaths.
+- Added `file_str_replace` and `put_complete_file_contents` to tool configurations and removed old `write_file_tool` (`ra_aid/tool_configs.py`).
+- Removed `ripgrep_search` tool from default CIAYN tools (use `run_shell_command` instead) (`ra_aid/tool_configs.py`).
+- Updated core agent prompts (Research, Planning, Implementation) to emphasize using `rg` via `run_shell_command`, mandate `emit_research_notes`, and refine instructions (`ra_aid/prompts/`).
+
+### Testing
+- Added tests for fallback warning logic in `tests/ra_aid/agent_backends/test_ciayn_fallback_warning.py`.
+- Updated tests for `put_complete_file_contents` tool in `tests/ra_aid/tools/test_write_file.py`.
+
 ## [0.27.0] 2025-04-16
 
 ### Added
