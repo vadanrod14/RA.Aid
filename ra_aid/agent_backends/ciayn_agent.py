@@ -778,6 +778,9 @@ class CiaynAgent:
 
         if not fallback_response:
             self.chat_history.append(err_msg)
+            if not self.fallback_handler.fallback_enabled:
+                # Fallback disabled; skip misleading warning
+                return ""
             logger.info(
                 f"Tool fallback was attempted but did not succeed. Original error: {str(e)}"
             )
