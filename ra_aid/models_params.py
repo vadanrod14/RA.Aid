@@ -116,6 +116,14 @@ models_params = {
             "latency_coefficient": DEFAULT_BASE_LATENCY,
             "default_backend": AgentBackendType.CIAYN,
         },
+        "o3-2025-04-16": {
+            "token_limit": 200000,
+            "supports_temperature": False,
+            "default_temperature": 1.0,
+            "supports_reasoning_effort": True,
+            "latency_coefficient": DEFAULT_BASE_LATENCY,
+            "default_backend": AgentBackendType.CIAYN,
+        },
         "gpt-4.1": {
             "token_limit": 1000000,
             "supports_temperature": True,
