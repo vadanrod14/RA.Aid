@@ -288,6 +288,12 @@ models_params = {
             "supports_reasoning_effort": True,
             "latency_coefficient": DEFAULT_BASE_LATENCY,
         },
+        "o3-mini-2025-01-31": {
+            "token_limit": 200000,
+            "supports_temperature": False,
+            "supports_reasoning_effort": True,
+            "latency_coefficient": DEFAULT_BASE_LATENCY,
+        },
     },
     "openrouter": {
         "qwen/qwen-2.5-coder-32b-instruct": {
