@@ -100,6 +100,14 @@ models_params = {
             "latency_coefficient": DEFAULT_BASE_LATENCY,
             "default_backend": AgentBackendType.CREATE_REACT_AGENT,
         },
+        "o4-mini-2025-04-16": {
+            "token_limit": 200000,
+            "supports_temperature": False,
+            "default_temperature": 1.0,
+            "supports_reasoning_effort": True,
+            "latency_coefficient": DEFAULT_BASE_LATENCY,
+            "default_backend": AgentBackendType.CREATE_REACT_AGENT,
+        },
         "o3": {
             "token_limit": 200000,
             "supports_temperature": False,
