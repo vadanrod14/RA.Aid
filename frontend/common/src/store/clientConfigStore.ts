@@ -78,9 +78,10 @@ type ClientConfigStore = ClientConfigState & ClientConfigActions;
  *     to connect to the default Python backend.
  *   - Otherwise, it uses the current window's location port or falls back to `1818`.
  */
+const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT ? Number.parseInt(import.meta.env.VITE_BACKEND_PORT) : 1818;
 const DEFAULT_CONFIG = ClientConfigSchema.parse({
   host: window?.location?.hostname || 'localhost',
-  port: Number.parseInt(window?.location?.port === '5173' ? '1818' : window?.location?.port) || 1818
+  port: Number.parseInt(window?.location?.port === '5173' ? `${BACKEND_PORT}` : window?.location?.port) || BACKEND_PORT
 });
 
 /**
