@@ -72,6 +72,17 @@ pip install -e .
 ra-aid -m "Your task or query here"
 ```
 
+5. Frontend miscellany:
+
+```bash
+# run development server on port 5173
+cd frontend/
+yarn dev
+
+# run development server on other ports
+VITE_PORT=5555 VITE_BACKEND_PORT=7777 yarn dev
+```
+
 ## This is Your Project Too
 
 RA.Aid is a community project that grows stronger with each contribution. Whether it's fixing a typo in documentation, reporting a bug, or adding a new feature - every contribution matters and is valued.
