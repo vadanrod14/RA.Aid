@@ -70,8 +70,8 @@ type ClientConfigStore = ClientConfigState & ClientConfigActions;
  * Default configuration values
  */
 const DEFAULT_CONFIG = ClientConfigSchema.parse({
-  host: 'localhost',
-  port: 1818
+  host: window?.location?.hostname || 'localhost',
+  port: Number.parseInt(window?.location?.port) || 1818
 });
 
 /**
