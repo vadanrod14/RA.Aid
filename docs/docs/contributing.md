@@ -74,13 +74,19 @@ ra-aid -m "Your task or query here"
 
 5. Frontend miscellany:
 
+The backend must always be run using `ra-aid --server` separately. `yarn dev` is used to run the frontend development server.
+
 ```bash
 # run development server on port 5173
 cd frontend/
 yarn dev
 
-# run development server on other ports
-VITE_PORT=5555 VITE_BACKEND_PORT=7777 yarn dev
+# run development bundle for other ports
+# (the prebuilt bundle from uvicorn always serves both frontend and backend on --server-port argument)
+VITE_FRONTEND_PORT=5555 yarn dev  # hosts web app on 5555 targeting backend on 1818
+VITE_FRONTEND_PORT=2221 VITE_BACKEND_PORT=9191 yarn dev  # hosts web app on 2221 targeting backend on 9191
+VITE_BACKEND_PORT=4002 yarn dev  # hosts web app on 5173 (vite default port) targeting backend on 4002
+yarn dev  # hosts web app on 5173 (default) targeting backend on 1818
 ```
 
 ## This is Your Project Too

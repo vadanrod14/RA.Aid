@@ -73,15 +73,14 @@ type ClientConfigStore = ClientConfigState & ClientConfigActions;
  * The default client configuration object, parsed using the `ClientConfigSchema`.
  * 
  * - `host`: Defaults to the current window's hostname, or 'localhost' if unavailable.
- * - `port`: Determines the port based on the current window's location port:
- *   - If the port is `5173` (used by Vite's development HMR server), it defaults to `1818` 
- *     to connect to the default Python backend.
- *   - Otherwise, it uses the current window's location port or falls back to `1818`.
+ * - `port`: Determines the port based on the environment:
+ *   - In `vite dev` server, it uses the `VITE_BACKEND_PORT` environment variable, defaulting to `1818` if not set.
+ *   - In `vite build` (prebuilt production), it uses the current `window.location.port`, defaulting to `1818` if unavailable.
  */
-const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT ? Number.parseInt(import.meta.env.VITE_BACKEND_PORT) : 1818;
+const backend_port = import.meta.env.DEV ? Number.parseInt(import.meta.env.VITE_BACKEND_PORT || '1818') : Number.parseInt(window?.location?.port || '1818');
 const DEFAULT_CONFIG = ClientConfigSchema.parse({
   host: window?.location?.hostname || 'localhost',
-  port: Number.parseInt(window?.location?.port === '5173' ? `${BACKEND_PORT}` : window?.location?.port) || BACKEND_PORT
+  port: backend_port
 });
 
 /**
