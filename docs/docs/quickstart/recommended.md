@@ -18,6 +18,8 @@ RA.Aid must be installed before using these configurations. If you haven't insta
 To use RA.Aid with the recommended configuration, you'll need to obtain the following API key:
 
 1.  **Gemini API Key**: Obtain a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+   
+   **⚠️ Note**: You should set up a billing account associated with your generate key to get Tier 1. By default, you'll get the Free Tier plan and probably a get a Rate Limit Error.
 
 You might also consider keys for other services if you want to explicitly configure different models or providers:
 
