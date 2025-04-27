@@ -325,7 +325,7 @@ def _handle_api_error(e, attempt, max_retries, base_delay):
 
     # Change log level to info
     logger.info("API error (attempt %d/%d): %s", attempt + 1, max_retries, str(e))
-    delay = base_delay * (2**attempt)
+    delay = 60  # Use a fixed 60-second delay
     error_message = f"Encountered {e.__class__.__name__}: {e}. Retrying in {delay}s... (Attempt {attempt+1}/{max_retries})"
 
     trajectory_repo = get_trajectory_repository()
